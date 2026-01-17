@@ -16,6 +16,7 @@ export function ReportingTab() {
         .map((post, index) => ({
           id: index + 1,
           image: post.thumbnail || `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop`,
+          permalink: post.permalink,
           likes: post.likes || 0,
           comments: post.comments || 0,
           reach: post.engagement || 0,
@@ -82,14 +83,21 @@ export function ReportingTab() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-muted-foreground w-6">#{index + 1}</span>
-                        <img
-                          src={post.image}
-                          alt="Post thumbnail"
-                          className="w-12 h-12 rounded-lg object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop';
-                          }}
-                        />
+                        <a 
+                          href={post.permalink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="hover:opacity-80 transition-opacity"
+                        >
+                          <img
+                            src={post.image}
+                            alt="Post thumbnail"
+                            className="w-12 h-12 rounded-lg object-cover cursor-pointer"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop';
+                            }}
+                          />
+                        </a>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{post.date}</td>
