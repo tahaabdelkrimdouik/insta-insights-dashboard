@@ -46,11 +46,13 @@ export const dashboardService = {
 
 // ============ Media Services ============
 export const mediaService = {
-  getAllMedia: (limit?: number) => 
-    apiClient.get<MediaPost[]>(
+  getAllMedia: async (limit?: number): Promise<MediaPost[]> => {
+    const response = await apiClient.get<{ posts: MediaPost[] }>(
       API_ENDPOINTS.stats.media, 
       limit ? { limit: limit.toString() } : undefined
-    ),
+    );
+    return response.posts || [];
+  },
   
   getMediaById: (id: string) => 
     apiClient.get<MediaPost>(API_ENDPOINTS.stats.mediaById(id)),
