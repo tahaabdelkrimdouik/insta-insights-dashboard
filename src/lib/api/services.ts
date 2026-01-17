@@ -68,10 +68,22 @@ export const analyticsService = {
 
 // ============ Chart Services ============
 export const chartService = {
-  getEngagementChart: async (): Promise<EngagementChartPoint[]> => {
+  getEngagementChart: async (days?: number): Promise<EngagementChartPoint[]> => {
     const response = await apiClient.get<EngagementChartResponse>(API_ENDPOINTS.charts.engagement);
     // Extract raw data array from the API response
-    return response.raw || [];
+    let data = response.raw || [];
+    
+    // Filter by date range if specified
+    if (days && data.length > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      data = data.filter(point => {
+        const pointDate = new Date(point.fullDate);
+        return pointDate >= cutoffDate;
+      });
+    }
+    
+    return data;
   },
   
   getContentBreakdown: () => 
