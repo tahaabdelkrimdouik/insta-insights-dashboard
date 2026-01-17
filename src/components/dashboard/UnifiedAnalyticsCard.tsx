@@ -7,17 +7,17 @@ import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
+import { useFollowersGrowth, useDashboard, useEngagementChart } from "@/hooks/useInstagramApi";
 
-// Fallback mock data for chart (followers only)
+// Fallback mock data for chart
 const mockChartData = [
-  { date: "Jan 1", followers: 42000 },
-  { date: "Jan 5", followers: 42450 },
-  { date: "Jan 10", followers: 43100 },
-  { date: "Jan 15", followers: 43800 },
-  { date: "Jan 20", followers: 44200 },
-  { date: "Jan 25", followers: 44890 },
-  { date: "Jan 30", followers: 45892 },
+  { date: "Jan 1", followers: 42000, likes: 1200, comments: 85 },
+  { date: "Jan 5", followers: 42450, likes: 1350, comments: 92 },
+  { date: "Jan 10", followers: 43100, likes: 1480, comments: 110 },
+  { date: "Jan 15", followers: 43800, likes: 1620, comments: 125 },
+  { date: "Jan 20", followers: 44200, likes: 1550, comments: 98 },
+  { date: "Jan 25", followers: 44890, likes: 1780, comments: 145 },
+  { date: "Jan 30", followers: 45892, likes: 1920, comments: 168 },
 ];
 
 export function UnifiedAnalyticsCard() {
@@ -26,22 +26,36 @@ export function UnifiedAnalyticsCard() {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { data: followersData, isLoading: followersLoading, error: followersError, refetch: refetchFollowers } = useFollowersGrowth(Number(dateRange));
+  const { data: engagementData, isLoading: engagementLoading, error: engagementError, refetch: refetchEngagement } = useEngagementChart(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
-  const isLoading = followersLoading || dashboardLoading;
-  const hasError = followersError || dashboardError;
+  const isLoading = followersLoading || dashboardLoading || engagementLoading;
+  const hasError = followersError || dashboardError || engagementError;
 
-  // Transform followers data for chart (only followers)
+  // Merge followers and engagement data for unified chart
   const chartData = useMemo(() => {
     if (followersData && followersData.length > 0) {
-      return followersData.map(point => ({
-        date: point.date,
-        followers: point.total_followers,
-      }));
+      // Create a map of engagement data by fullDate for merging
+      const engagementMap = new Map<string, { likes: number; comments: number }>();
+      if (engagementData && engagementData.length > 0) {
+        engagementData.forEach(point => {
+          engagementMap.set(point.fullDate, { likes: point.likes, comments: point.comments });
+        });
+      }
+
+      return followersData.map(point => {
+        const engagement = engagementMap.get(point.fullDate) || { likes: 0, comments: 0 };
+        return {
+          date: point.date,
+          followers: point.total_followers,
+          likes: engagement.likes,
+          comments: engagement.comments,
+        };
+      });
     }
     
     return mockChartData;
-  }, [followersData]);
+  }, [followersData, engagementData]);
 
   // Stats from dashboard API (likes, comments) and followers data
   const totals = useMemo(() => {
@@ -74,6 +88,7 @@ export function UnifiedAnalyticsCard() {
 
   const handleRefresh = () => {
     refetchFollowers();
+    refetchEngagement();
     refetchDashboard();
   };
 
