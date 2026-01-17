@@ -126,7 +126,7 @@ export function MonetisationTab() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 slide-up px-4 md:px-8">
+    <div className="flex flex-col h-full min-h-0 slide-up px-6 md:px-12 lg:px-16">
       {/* Back button - only visible when in chat */}
       {isInChat && (
         <div className="mb-4">
@@ -268,7 +268,7 @@ export function MonetisationTab() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Ask about growth strategies..."
+              placeholder="Ask about monetisation tips..."
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
