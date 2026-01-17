@@ -12,6 +12,8 @@ import type { MetricType } from "./MetricWidget";
 interface ChartDataPoint {
   date: string;
   followers: number;
+  likes?: number;
+  comments?: number;
 }
 
 interface ReportingCurveProps {
@@ -58,6 +60,14 @@ export function ReportingCurve({ data }: ReportingCurveProps) {
               <stop offset="5%" stopColor={COLORS.followers} stopOpacity={0.4} />
               <stop offset="95%" stopColor={COLORS.followers} stopOpacity={0.05} />
             </linearGradient>
+            <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.likes} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.likes} stopOpacity={0.05} />
+            </linearGradient>
+            <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.comments} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.comments} stopOpacity={0.05} />
+            </linearGradient>
           </defs>
           <CartesianGrid 
             strokeDasharray="3 3" 
@@ -74,6 +84,7 @@ export function ReportingCurve({ data }: ReportingCurveProps) {
             dy={10}
           />
           <YAxis
+            yAxisId="left"
             stroke="hsl(var(--muted-foreground))"
             fontSize={11}
             tickLine={false}
@@ -81,11 +92,22 @@ export function ReportingCurve({ data }: ReportingCurveProps) {
             tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
             dx={-10}
           />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => value.toLocaleString()}
+            dx={10}
+          />
           <Tooltip content={<CustomTooltip />} />
           
           <Area
             type="monotone"
             dataKey="followers"
+            yAxisId="left"
             stroke={COLORS.followers}
             strokeWidth={2.5}
             fill="url(#colorFollowers)"
@@ -93,6 +115,40 @@ export function ReportingCurve({ data }: ReportingCurveProps) {
             activeDot={{ 
               r: 6, 
               fill: COLORS.followers, 
+              strokeWidth: 2, 
+              stroke: "hsl(var(--background))" 
+            }}
+            animationDuration={500}
+            animationEasing="ease-out"
+          />
+          <Area
+            type="monotone"
+            dataKey="likes"
+            yAxisId="right"
+            stroke={COLORS.likes}
+            strokeWidth={2}
+            fill="url(#colorLikes)"
+            dot={false}
+            activeDot={{ 
+              r: 5, 
+              fill: COLORS.likes, 
+              strokeWidth: 2, 
+              stroke: "hsl(var(--background))" 
+            }}
+            animationDuration={500}
+            animationEasing="ease-out"
+          />
+          <Area
+            type="monotone"
+            dataKey="comments"
+            yAxisId="right"
+            stroke={COLORS.comments}
+            strokeWidth={2}
+            fill="url(#colorComments)"
+            dot={false}
+            activeDot={{ 
+              r: 5, 
+              fill: COLORS.comments, 
               strokeWidth: 2, 
               stroke: "hsl(var(--background))" 
             }}
