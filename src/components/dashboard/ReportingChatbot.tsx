@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Mic, MicOff, Bot, User } from "lucide-react";
+import { Send, Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -82,27 +82,13 @@ export function ReportingChatbot() {
           <div
             key={message.id}
             className={cn(
-              "flex gap-3 animate-fade-in",
-              message.role === "user" ? "flex-row-reverse" : "flex-row"
+              "flex animate-fade-in",
+              message.role === "user" ? "justify-end" : "justify-start"
             )}
           >
             <div
               className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
-                message.role === "user"
-                  ? "bg-gradient-to-br from-metric-pink to-metric-orange"
-                  : "bg-muted"
-              )}
-            >
-              {message.role === "user" ? (
-                <User className="w-3.5 h-3.5 text-white" />
-              ) : (
-                <Bot className="w-3.5 h-3.5 text-muted-foreground" />
-              )}
-            </div>
-            <div
-              className={cn(
-                "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm",
+                "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm",
                 message.role === "user"
                   ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white rounded-br-md"
                   : "bg-muted text-foreground rounded-bl-md"
@@ -121,10 +107,7 @@ export function ReportingChatbot() {
           </div>
         ))}
         {isTyping && (
-          <div className="flex gap-3 animate-fade-in">
-            <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-muted-foreground" />
-            </div>
+          <div className="flex animate-fade-in justify-start">
             <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />

@@ -126,7 +126,7 @@ export function MonetisationTab() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] lg:h-[calc(100vh-80px)] slide-up">
+    <div className="flex flex-col h-[calc(100vh-120px)] lg:h-[calc(100vh-80px)] slide-up px-4 md:px-8">
       {/* Back button - only visible when in chat */}
       {isInChat && (
         <div className="mb-4">
