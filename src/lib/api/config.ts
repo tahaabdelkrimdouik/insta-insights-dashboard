@@ -26,7 +26,7 @@ export const API_ENDPOINTS = {
   },
   charts: {
     engagement: '/stats/charts/engagement',
-    followersGrowth: '/charts/followers-growth',
+    followersGrowth: '/stats/charts/followers-growth',
     contentBreakdown: '/stats/charts/content-breakdown',
     growthSimulation: '/stats/charts/growth-simulation',
   },
