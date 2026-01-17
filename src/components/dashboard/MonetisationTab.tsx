@@ -126,7 +126,7 @@ export function MonetisationTab() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] lg:h-[calc(100vh-80px)] slide-up px-4 md:px-8">
+    <div className="flex flex-col h-full min-h-0 slide-up px-4 md:px-8">
       {/* Back button - only visible when in chat */}
       {isInChat && (
         <div className="mb-4">
@@ -147,12 +147,9 @@ export function MonetisationTab() {
           <div className="flex-1 flex flex-col">
             {/* Big centered title */}
             <div className="text-center py-12">
-              <h1 className="text-2xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl font-bold text-foreground">
                 Your Monetisation Assistant
               </h1>
-              <p className="text-muted-foreground">
-                Ask me about growth strategies, content ideas, or monetisation tips...
-              </p>
             </div>
 
             {/* Previous conversations grid */}
@@ -271,7 +268,7 @@ export function MonetisationTab() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Ask about growth strategies, content ideas..."
+              placeholder="Ask about growth strategies..."
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
