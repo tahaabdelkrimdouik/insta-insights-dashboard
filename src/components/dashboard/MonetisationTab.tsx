@@ -260,40 +260,42 @@ export function MonetisationTab() {
           </div>
         )}
 
-        {/* Input - more rounded */}
+        {/* Input - send icon inside the input area */}
         <div className="p-3">
-          <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-2xl px-4 py-3">
+          <div className="relative">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Ask about monetisation tips..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              className="w-full bg-muted/50 border border-border rounded-2xl pl-4 pr-24 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <button
-              onClick={toggleRecording}
-              className={cn(
-                "p-2 rounded-xl transition-all duration-200",
-                isRecording
-                  ? "bg-destructive text-white recording-pulse"
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim()}
-              className={cn(
-                "p-2 rounded-xl transition-all duration-200",
-                inputValue.trim()
-                  ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white hover:opacity-90"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              )}
-            >
-              <Send className="w-4 h-4" />
-            </button>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <button
+                onClick={toggleRecording}
+                className={cn(
+                  "p-2 rounded-xl transition-all duration-200",
+                  isRecording
+                    ? "bg-destructive text-white recording-pulse"
+                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim()}
+                className={cn(
+                  "p-2 rounded-xl transition-all duration-200",
+                  inputValue.trim()
+                    ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white hover:opacity-90"
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                )}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
