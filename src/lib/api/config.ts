@@ -2,6 +2,9 @@
 // Update this to your Express backend URL
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://tyrannisingly-dendritic-nayeli.ngrok-free.dev';
 
+// LLM API URL (can be different from stats API)
+export const LLM_API_URL = import.meta.env.VITE_LLM_API_URL || API_BASE_URL;
+
 export const API_ENDPOINTS = {
   // Auth
   auth: {
