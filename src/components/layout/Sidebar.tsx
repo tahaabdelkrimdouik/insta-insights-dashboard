@@ -90,11 +90,12 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       >
         <div className="flex flex-col h-full">
           {/* Logo with collapse toggle */}
-          <div className={cn(
-            "flex items-center justify-between px-4 py-6 border-b border-sidebar-border",
-            isCollapsed && "justify-center px-2"
-          )}>
-            <div className="flex items-center gap-3">
+          {/* Logo with collapse toggle */}
+          <div className="relative px-4 py-6 border-b border-sidebar-border">
+            <div className={cn(
+              "flex items-center gap-3",
+              isCollapsed && "justify-center"
+            )}>
               <div className="gradient-accent rounded-lg p-2 shrink-0">
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
@@ -105,15 +106,12 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 </div>
               )}
             </div>
-            {/* Collapse Button (Desktop Only) */}
+            {/* Collapse Button - positioned at edge of sidebar */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className={cn(
-                "hidden lg:flex items-center justify-center p-1.5 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
-                isCollapsed && "absolute right-2"
-              )}
+              className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-full bg-sidebar border border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors shadow-sm"
             >
-              <ChevronLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+              <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform", isCollapsed && "rotate-180")} />
             </button>
           </div>
 
