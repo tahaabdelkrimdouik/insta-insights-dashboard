@@ -90,7 +90,7 @@ export function UnifiedAnalyticsCard() {
         {/* Pure Curve Container */}
         <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
           {/* Header with internal tabs */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-border/50 relative z-20">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold text-foreground">Performance Trends</h2>
               {activeMetric !== "all" && (
