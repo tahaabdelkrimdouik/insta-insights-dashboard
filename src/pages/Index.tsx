@@ -11,8 +11,8 @@ const Index = () => {
     <div className="min-h-screen bg-background flex">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
-      {/* Add mobile top padding to account for fixed header */}
-      <main className="flex-1 p-4 lg:p-6 overflow-auto pt-[76px] lg:pt-6">
+      {/* Add mobile top padding and bottom padding for nav bars */}
+      <main className="flex-1 p-4 lg:p-6 overflow-auto pt-[76px] pb-[80px] lg:pt-6 lg:pb-6">
         {activeTab === "reporting" && <ReportingTab />}
         {activeTab === "monetisation" && <MonetisationTab />}
         {activeTab === "compte" && <CompteTab />}

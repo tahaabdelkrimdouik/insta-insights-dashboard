@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BarChart3, DollarSign, User, Menu, X, ChevronLeft, Sun, Moon } from "lucide-react";
+import { BarChart3, DollarSign, User, ChevronLeft, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,6 @@ const menuItems = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return document.documentElement.classList.contains('dark');
@@ -33,7 +32,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
   const handleTabChange = (tabId: string) => {
     onTabChange(tabId);
-    setIsMobileOpen(false);
   };
 
   const toggleTheme = () => {
@@ -51,45 +49,62 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             </div>
             <span className="text-lg font-bold text-sidebar-foreground">InstaMetrics</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-sidebar-foreground hover:bg-sidebar-accent"
+          >
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
 
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-foreground/50 z-40"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border safe-area-bottom">
+        <div className="flex items-center justify-around px-2 py-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleTabChange(item.id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[72px]",
+                  isActive
+                    ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white"
+                    : "text-sidebar-foreground/70"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+          <button
+            onClick={() => handleTabChange("compte")}
+            className={cn(
+              "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[72px]",
+              activeTab === "compte"
+                ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white"
+                : "text-sidebar-foreground/70"
+            )}
+          >
+            <User className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Compte</span>
+          </button>
+        </div>
+      </div>
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-[70px]" : "w-[260px]",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "hidden lg:block fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-[70px]" : "w-[260px]"
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Logo with collapse toggle */}
           {/* Logo with collapse toggle */}
           <div className="relative px-4 py-6 border-b border-sidebar-border">
             <div className={cn(
@@ -109,7 +124,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             {/* Collapse Button - positioned at edge of sidebar */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-full bg-sidebar border border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors shadow-sm"
+              className="flex absolute -right-3 top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-full bg-sidebar border border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors shadow-sm"
             >
               <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform", isCollapsed && "rotate-180")} />
             </button>
@@ -183,7 +198,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         "hidden lg:block shrink-0 transition-all duration-300",
         isCollapsed ? "w-[70px]" : "w-[260px]"
       )} />
-
     </>
   );
 }
