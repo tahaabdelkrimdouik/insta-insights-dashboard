@@ -59,7 +59,7 @@ export function UnifiedAnalyticsCard() {
       {/* Left: Analytics Section */}
       <div className="flex-1 space-y-4 flex flex-col">
         {/* Metric Widgets - Completely outside curve */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricWidget
             type="followers"
             label="Followers"
@@ -90,10 +90,10 @@ export function UnifiedAnalyticsCard() {
         </div>
 
         {/* Pure Curve Container */}
-        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm flex-1">
           {/* Header with internal tabs */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border/50 relative z-20">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 border-b border-border/50 relative z-20 gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <h2 className="text-sm font-semibold text-foreground">Performance Trends</h2>
               {activeMetric !== "all" && (
                 <button
@@ -106,7 +106,7 @@ export function UnifiedAnalyticsCard() {
               )}
               <DateFilter value={dateRange} onChange={setDateRange} />
             </div>
-            <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg self-start sm:self-auto">
               <button
                 onClick={() => setActiveTab("analytics")}
                 className={cn(
@@ -135,7 +135,7 @@ export function UnifiedAnalyticsCard() {
           </div>
 
           {/* Content area */}
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             {activeTab === "analytics" ? (
               <ReportingCurve data={unifiedChartData} activeMetric={activeMetric} />
             ) : (
