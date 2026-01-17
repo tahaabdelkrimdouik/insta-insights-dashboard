@@ -85,7 +85,7 @@ export const chartService = {
 
   getFollowersGrowth: async (days?: number): Promise<FollowersGrowthPoint[]> => {
     const response = await apiClient.get<FollowersGrowthResponse>(API_ENDPOINTS.charts.followersGrowth);
-    let data = response.raw || [];
+    let data = response.data?.raw || [];
     
     if (days && data.length > 0) {
       const cutoffDate = new Date();

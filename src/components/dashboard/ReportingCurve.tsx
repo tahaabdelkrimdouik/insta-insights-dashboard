@@ -11,7 +11,7 @@ import type { MetricType } from "./MetricWidget";
 
 interface ChartDataPoint {
   date: string;
-  engagement: number;
+  followers: number;
   likes: number;
   comments: number;
 }
@@ -23,7 +23,7 @@ interface ReportingCurveProps {
 
 // Pink/Orange theme colors
 export const COLORS = {
-  engagement: "hsl(340, 82%, 65%)",
+  followers: "hsl(340, 82%, 65%)",
   likes: "hsl(25, 95%, 60%)",
   comments: "hsl(280, 60%, 70%)",
 };
@@ -52,12 +52,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
-  const showEngagement = activeMetric === "all" || activeMetric === "engagement";
+  const showFollowers = activeMetric === "all" || activeMetric === "followers";
   const showLikes = activeMetric === "all" || activeMetric === "likes";
   const showComments = activeMetric === "all" || activeMetric === "comments";
 
   // Determine which Y-axis to use based on active metric
-  const useEngagementAxis = showEngagement;
+  const useFollowersAxis = showFollowers;
   const useLikesCommentsAxis = showLikes || showComments;
 
   return (
@@ -65,9 +65,9 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="colorEngagement" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.engagement} stopOpacity={0.4} />
-              <stop offset="95%" stopColor={COLORS.engagement} stopOpacity={0.05} />
+            <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.followers} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.followers} stopOpacity={0.05} />
             </linearGradient>
             <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={COLORS.likes} stopOpacity={0.4} />
@@ -92,44 +92,44 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
             axisLine={false}
             dy={10}
           />
-          {useEngagementAxis && (
+          {useFollowersAxis && (
             <YAxis
-              yAxisId="engagement"
+              yAxisId="followers"
               orientation="left"
               stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => value.toLocaleString()}
+              tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
               dx={-10}
             />
           )}
-          {useLikesCommentsAxis && !useEngagementAxis && (
+          {useLikesCommentsAxis && (
             <YAxis
               yAxisId="likesComments"
-              orientation="left"
+              orientation={useFollowersAxis ? "right" : "left"}
               stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) => value.toLocaleString()}
-              dx={-10}
+              dx={useFollowersAxis ? 10 : -10}
             />
           )}
           <Tooltip content={<CustomTooltip />} />
           
-          {showEngagement && (
+          {showFollowers && (
             <Area
-              yAxisId="engagement"
+              yAxisId="followers"
               type="monotone"
-              dataKey="engagement"
-              stroke={COLORS.engagement}
+              dataKey="followers"
+              stroke={COLORS.followers}
               strokeWidth={2.5}
-              fill="url(#colorEngagement)"
+              fill="url(#colorFollowers)"
               dot={false}
               activeDot={{ 
                 r: 6, 
-                fill: COLORS.engagement, 
+                fill: COLORS.followers, 
                 strokeWidth: 2, 
                 stroke: "hsl(var(--background))" 
               }}
@@ -139,7 +139,7 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
           )}
           {showLikes && (
             <Area
-              yAxisId={useEngagementAxis ? "engagement" : "likesComments"}
+              yAxisId="likesComments"
               type="monotone"
               dataKey="likes"
               stroke={COLORS.likes}
@@ -158,7 +158,7 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
           )}
           {showComments && (
             <Area
-              yAxisId={useEngagementAxis ? "engagement" : "likesComments"}
+              yAxisId="likesComments"
               type="monotone"
               dataKey="comments"
               stroke={COLORS.comments}
