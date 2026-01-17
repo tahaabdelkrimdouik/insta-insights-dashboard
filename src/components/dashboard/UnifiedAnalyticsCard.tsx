@@ -55,9 +55,9 @@ export function UnifiedAnalyticsCard() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
+    <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
       {/* Left: Analytics Section */}
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 flex flex-col">
         {/* Metric Widgets - Completely outside curve */}
         <div className="grid grid-cols-3 gap-3">
           <MetricWidget
@@ -149,8 +149,8 @@ export function UnifiedAnalyticsCard() {
       <div className="hidden lg:block w-px bg-border/50" />
 
       {/* Right: Floating Chatbot Panel */}
-      <div className="w-full lg:w-[340px] xl:w-[380px]">
-        <div className="bg-transparent rounded-2xl overflow-hidden  h-[580px] sticky top-4">
+      <div className="w-full lg:w-[340px] xl:w-[380px] flex">
+        <div className="bg-transparent rounded-2xl overflow-hidden flex-1 sticky top-4">
           <ReportingChatbot />
         </div>
       </div>
