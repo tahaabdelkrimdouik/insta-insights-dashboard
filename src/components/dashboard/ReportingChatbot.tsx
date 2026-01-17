@@ -139,7 +139,7 @@ export function ReportingChatbot() {
 
       {/* Input */}
       <div className="p-3">
-        <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-xl px-3 py-2">
           <input
             type="text"
             value={input}
