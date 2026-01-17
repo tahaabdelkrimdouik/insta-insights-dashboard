@@ -1,7 +1,7 @@
-import { TrendingUp, TrendingDown, Users, Eye, TrendingUp as GainIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type MetricType = "followers" | "reach" | "dailyGain" | "all";
+export type MetricType = "followers" | "likes" | "comments" | "all";
 
 interface MetricWidgetProps {
   type: MetricType;
@@ -15,8 +15,8 @@ interface MetricWidgetProps {
 
 const iconMap = {
   followers: Users,
-  reach: Eye,
-  dailyGain: GainIcon,
+  likes: Heart,
+  comments: MessageCircle,
   all: Users,
 };
 
