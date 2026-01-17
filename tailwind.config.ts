@@ -58,11 +58,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        instagram: {
-          pink: "hsl(var(--instagram-pink))",
-          purple: "hsl(var(--instagram-purple))",
-          orange: "hsl(var(--instagram-orange))",
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          light: "hsl(var(--navy-light))",
         },
+        teal: {
+          DEFAULT: "hsl(var(--teal))",
+          light: "hsl(var(--teal-light))",
+        },
+        slate: "hsl(var(--slate))",
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",

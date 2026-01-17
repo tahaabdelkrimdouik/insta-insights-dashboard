@@ -17,7 +17,7 @@ export function CompteTab() {
   };
 
   return (
-    <div className="space-y-6 slide-up">
+    <div className="space-y-6 slide-up max-w-4xl">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">Account</h2>
@@ -26,17 +26,17 @@ export function CompteTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
-        <div className="lg:col-span-2 stat-card">
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <div className="relative">
               <img
                 src={profileData.profilePicture}
                 alt={profileData.displayName}
-                className="w-24 h-24 rounded-full object-cover ring-4 ring-primary/20"
+                className="w-24 h-24 rounded-full object-cover ring-4 ring-accent/20"
               />
               {profileData.verifiedBadge && (
-                <div className="absolute -bottom-1 -right-1 gradient-instagram rounded-full p-1">
-                  <BadgeCheck className="h-5 w-5 text-primary-foreground" />
+                <div className="absolute -bottom-1 -right-1 gradient-accent rounded-full p-1">
+                  <BadgeCheck className="h-5 w-5 text-accent-foreground" />
                 </div>
               )}
             </div>
@@ -71,7 +71,7 @@ export function CompteTab() {
         </div>
 
         {/* Connection Status */}
-        <div className="stat-card">
+        <div className="bg-card rounded-xl border border-border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Connection Status</h3>
           <div className="space-y-4">
             <div
@@ -99,7 +99,7 @@ export function CompteTab() {
               variant={isConnected ? "destructive" : "default"}
               className={cn(
                 "w-full",
-                !isConnected && "gradient-instagram text-primary-foreground hover:opacity-90"
+                !isConnected && "gradient-accent text-accent-foreground hover:opacity-90"
               )}
             >
               {isConnected ? (
@@ -119,7 +119,7 @@ export function CompteTab() {
       </div>
 
       {/* Settings */}
-      <div className="stat-card">
+      <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Settings className="h-5 w-5 text-muted-foreground" />
           <h3 className="text-lg font-semibold text-foreground">Settings</h3>
@@ -132,7 +132,7 @@ export function CompteTab() {
               <label className="text-sm font-medium text-foreground">Timezone</label>
             </div>
             <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger className="bg-card">
+              <SelectTrigger className="bg-muted/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card">
@@ -151,7 +151,7 @@ export function CompteTab() {
               <label className="text-sm font-medium text-foreground">Refresh Interval</label>
             </div>
             <Select value={refreshInterval} onValueChange={setRefreshInterval}>
-              <SelectTrigger className="bg-card">
+              <SelectTrigger className="bg-muted/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card">
@@ -166,7 +166,7 @@ export function CompteTab() {
           {/* Auto Refresh Toggle */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Auto Refresh</label>
-            <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
               <span className="text-sm text-muted-foreground">Enable automatic data refresh</span>
               <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} />
             </div>

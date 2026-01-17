@@ -4,11 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Instagram Analytics Dashboard Design System */
+/* SaaS Dashboard Design System - Navy & Teal Theme */
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
+    --background: 210 20% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -17,16 +17,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 262 83% 58%;
+    --primary: 222 47% 20%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
+    --secondary: 215 20% 95%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 215 20% 95%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 330 80% 60%;
+    --accent: 174 62% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -40,52 +40,54 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --ring: 174 62% 47%;
 
     --radius: 0.75rem;
 
-    /* Instagram gradient */
-    --instagram-pink: 330 80% 60%;
-    --instagram-purple: 262 83% 58%;
-    --instagram-orange: 25 95% 53%;
+    /* Brand colors */
+    --navy: 222 47% 20%;
+    --navy-light: 222 35% 30%;
+    --teal: 174 62% 47%;
+    --teal-light: 174 52% 60%;
+    --slate: 215 20% 65%;
 
     /* Chart colors */
-    --chart-1: 262 83% 58%;
-    --chart-2: 330 80% 60%;
-    --chart-3: 25 95% 53%;
+    --chart-1: 174 62% 47%;
+    --chart-2: 222 47% 20%;
+    --chart-3: 199 89% 48%;
     --chart-4: 142 76% 36%;
-    --chart-5: 199 89% 48%;
+    --chart-5: 38 92% 50%;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-background: 222 47% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 174 62% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-accent: 222 47% 22%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 35% 25%;
+    --sidebar-ring: 174 62% 47%;
   }
 
   .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 8%;
+    --card: 222 47% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 8%;
+    --popover: 222 47% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 262 83% 65%;
+    --primary: 174 62% 47%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
+    --secondary: 222 35% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 33% 17%;
+    --muted: 222 35% 18%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 330 80% 65%;
+    --accent: 174 62% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
@@ -97,18 +99,18 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 262 83% 65%;
+    --border: 222 35% 20%;
+    --input: 222 35% 20%;
+    --ring: 174 62% 47%;
 
     --sidebar-background: 222 47% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 262 83% 65%;
+    --sidebar-primary: 174 62% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 262 83% 65%;
+    --sidebar-border: 222 35% 15%;
+    --sidebar-ring: 174 62% 47%;
   }
 }
 
@@ -124,21 +126,27 @@
 }
 
 @layer components {
-  .gradient-instagram {
+  .gradient-primary {
     background: linear-gradient(
       135deg,
-      hsl(var(--instagram-orange)) 0%,
-      hsl(var(--instagram-pink)) 50%,
-      hsl(var(--instagram-purple)) 100%
+      hsl(var(--navy)) 0%,
+      hsl(var(--navy-light)) 100%
     );
   }
 
-  .gradient-instagram-text {
+  .gradient-accent {
     background: linear-gradient(
       135deg,
-      hsl(var(--instagram-orange)) 0%,
-      hsl(var(--instagram-pink)) 50%,
-      hsl(var(--instagram-purple)) 100%
+      hsl(var(--teal)) 0%,
+      hsl(var(--teal-light)) 100%
+    );
+  }
+
+  .gradient-accent-text {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--teal)) 0%,
+      hsl(var(--teal-light)) 100%
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -151,6 +159,10 @@
 
   .stat-card {
     @apply bg-card rounded-xl p-6 shadow-sm border border-border card-hover;
+  }
+
+  .kpi-card {
+    @apply bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-200 hover:shadow-md;
   }
 
   .pulse-live {
@@ -194,5 +206,63 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  .slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Chat bubbles */
+  .chat-bubble-user {
+    @apply bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3;
+  }
+
+  .chat-bubble-ai {
+    @apply bg-secondary text-secondary-foreground rounded-2xl rounded-bl-md px-4 py-3;
+  }
+
+  /* Voice recording animation */
+  .recording-pulse {
+    animation: recording-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes recording-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.7;
+    }
+  }
+
+  /* Scrollbar styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
