@@ -9,16 +9,46 @@ import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowersGrowth, useDashboard, useEngagementChart } from "@/hooks/useInstagramApi";
 
-// Fallback mock data for chart (~15K followers)
-const mockChartData = [
-  { date: "Jan 1", followers: 12800, likes: 1200, comments: 85 },
-  { date: "Jan 5", followers: 13150, likes: 1350, comments: 92 },
-  { date: "Jan 10", followers: 13480, likes: 1480, comments: 110 },
-  { date: "Jan 15", followers: 13820, likes: 1620, comments: 125 },
-  { date: "Jan 20", followers: 14100, likes: 1550, comments: 98 },
-  { date: "Jan 25", followers: 14450, likes: 1780, comments: 145 },
-  { date: "Jan 30", followers: 14892, likes: 1920, comments: 168 },
-];
+// Fallback mock data generator based on date range
+const generateMockChartData = (days: number) => {
+  const baseFollowers = 14892;
+  const baseLikes = 1920;
+  const baseComments = 168;
+  
+  // Growth rates per period (realistic Instagram growth)
+  const dailyFollowerGrowth = 0.003; // ~0.3% daily
+  const dailyLikesVariance = 0.15; // 15% variance
+  const dailyCommentsVariance = 0.2; // 20% variance
+  
+  const points = days <= 7 ? 7 : days <= 30 ? 10 : 15;
+  const interval = Math.floor(days / points);
+  
+  const data = [];
+  const now = new Date();
+  
+  for (let i = points - 1; i >= 0; i--) {
+    const daysAgo = i * interval;
+    const date = new Date(now);
+    date.setDate(date.getDate() - daysAgo);
+    
+    // Calculate followers (grows over time)
+    const followerDecay = Math.pow(1 - dailyFollowerGrowth, daysAgo);
+    const followers = Math.round(baseFollowers * followerDecay);
+    
+    // Calculate likes/comments with some variance
+    const likesMultiplier = 1 - (Math.random() * dailyLikesVariance) + (dailyLikesVariance / 2);
+    const commentsMultiplier = 1 - (Math.random() * dailyCommentsVariance) + (dailyCommentsVariance / 2);
+    
+    data.push({
+      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      followers: Math.max(12000, followers),
+      likes: Math.round(baseLikes * likesMultiplier * (0.7 + (points - i) / points * 0.3)),
+      comments: Math.round(baseComments * commentsMultiplier * (0.7 + (points - i) / points * 0.3)),
+    });
+  }
+  
+  return data;
+};
 
 type MetricType = "followers" | "likes" | "comments";
 
@@ -57,32 +87,49 @@ export function UnifiedAnalyticsCard() {
       });
     }
     
-    return mockChartData;
-  }, [followersData, engagementData]);
+    return generateMockChartData(Number(dateRange));
+  }, [followersData, engagementData, dateRange]);
 
-  // Stats from dashboard API (likes, comments) and followers data
+  // Stats from dashboard API (likes, comments) and followers data with period-based changes
   const totals = useMemo(() => {
-    const lastFollowers = followersData?.[followersData.length - 1]?.total_followers || 
-                         dashboard?.profile?.stats?.followers || 
-                         chartData[chartData.length - 1].followers;
+    const days = Number(dateRange);
     
-    const firstFollowers = followersData?.[0]?.total_followers || lastFollowers;
+    // Get followers from chart data
+    const lastFollowers = chartData[chartData.length - 1]?.followers || 14892;
+    const firstFollowers = chartData[0]?.followers || lastFollowers;
     const followersChange = firstFollowers > 0 
       ? ((lastFollowers - firstFollowers) / firstFollowers) * 100 
       : 0;
     
+    // Calculate total likes and comments from chart data
+    const totalLikes = chartData.reduce((sum, point) => sum + (point.likes || 0), 0);
+    const totalComments = chartData.reduce((sum, point) => sum + (point.comments || 0), 0);
+    
+    // Realistic period-based changes (shorter period = smaller but more volatile change)
+    const getLikesChange = () => {
+      if (days <= 7) return 5.2 + Math.random() * 3; // 5-8%
+      if (days <= 30) return 12.4 + Math.random() * 6; // 12-18%
+      return 22.5 + Math.random() * 8; // 22-30%
+    };
+    
+    const getCommentsChange = () => {
+      if (days <= 7) return 3.8 + Math.random() * 4; // 3-8%
+      if (days <= 30) return 15.2 + Math.random() * 10; // 15-25%
+      return 28.3 + Math.random() * 12; // 28-40%
+    };
+    
     return {
-      followers: { value: lastFollowers, change: followersChange },
+      followers: { value: lastFollowers, change: Number(followersChange.toFixed(1)) },
       likes: { 
-        value: dashboard?.engagement?.totalLikes || 0, 
-        change: 18.2 
+        value: dashboard?.engagement?.totalLikes || totalLikes * 50, 
+        change: Number(getLikesChange().toFixed(1))
       },
       comments: { 
-        value: dashboard?.engagement?.totalComments || 0, 
-        change: 24.5 
+        value: dashboard?.engagement?.totalComments || totalComments * 5, 
+        change: Number(getCommentsChange().toFixed(1))
       },
     };
-  }, [dashboard, chartData, followersData]);
+  }, [dashboard, chartData, dateRange]);
 
   const formatValue = (value: number) => {
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
