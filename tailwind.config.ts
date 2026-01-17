@@ -62,11 +62,12 @@ export default {
           DEFAULT: "hsl(var(--navy))",
           light: "hsl(var(--navy-light))",
         },
-        teal: {
-          DEFAULT: "hsl(var(--teal))",
-          light: "hsl(var(--teal-light))",
-        },
         slate: "hsl(var(--slate))",
+        metric: {
+          pink: "hsl(var(--metric-pink))",
+          orange: "hsl(var(--metric-orange))",
+          pastel: "hsl(var(--metric-pastel))",
+        },
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",
