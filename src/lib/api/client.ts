@@ -68,6 +68,31 @@ class ApiClient {
       body: body ? JSON.stringify(body) : undefined,
     });
   }
+
+  // Raw post that doesn't expect { success, data } wrapper
+  async postRaw<T>(endpoint: string, body?: unknown): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const config: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    };
+
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        message: `HTTP ${response.status}: ${response.statusText}`,
+      }));
+      throw new Error(errorData.message || 'An error occurred');
+    }
+
+    return response.json();
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

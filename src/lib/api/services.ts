@@ -143,6 +143,6 @@ export const chatService = {
       temperature: request.temperature || 0.5,
       n_posts: request.n_posts || 3,
     };
-    return llmClient.post<ChatResponse>(API_ENDPOINTS.chat, payload);
+    return llmClient.postRaw<ChatResponse>(API_ENDPOINTS.chat, payload);
   },
 };
