@@ -25,8 +25,8 @@ export function GlobeMap() {
   const pointsData = useMemo(() => 
     mockGeoData.map(d => ({
       ...d,
-      size: Math.sqrt(d.percentage) * 0.4,
-      color: `hsl(340, 82%, ${50 + d.percentage}%)`,
+      size: Math.sqrt(d.percentage) * 0.5,
+      color: `rgba(249, 115, 22, ${0.6 + d.percentage / 100})`,
     })), 
   []);
 
@@ -77,9 +77,9 @@ export function GlobeMap() {
             width={dimensions.width}
             height={dimensions.height}
             backgroundColor="rgba(0,0,0,0)"
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
-            atmosphereColor="hsl(340, 82%, 52%)"
-            atmosphereAltitude={0.15}
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+            atmosphereColor="#f97316"
+            atmosphereAltitude={0.18}
             pointsData={pointsData}
             pointLat="lat"
             pointLng="lng"
