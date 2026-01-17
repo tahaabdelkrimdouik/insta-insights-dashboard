@@ -15,11 +15,11 @@ export function ReportingTab() {
         .slice(0, 4)
         .map((post, index) => ({
           id: index + 1,
-          image: post.mediaUrl || post.thumbnailUrl || `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop`,
+          image: post.thumbnail || `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop`,
           likes: post.likes || 0,
           comments: post.comments || 0,
           reach: post.engagement || 0,
-          date: post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
+          date: post.date ? new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
         }));
     }
     return mockTopPosts;

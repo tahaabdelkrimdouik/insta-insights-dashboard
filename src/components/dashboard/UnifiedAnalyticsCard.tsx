@@ -45,24 +45,21 @@ export function UnifiedAnalyticsCard() {
   }, [chartData]);
 
   const totals = useMemo(() => {
-    // Use API dashboard stats if available
-    if (dashboard?.stats) {
-      // Parse engagement rate to number if it's a string
-      const engagementRateNum = typeof dashboard.stats.engagementRate === 'string' 
-        ? parseFloat(dashboard.stats.engagementRate) 
-        : dashboard.stats.engagementRate;
+    // Use API dashboard engagement data if available
+    if (dashboard?.engagement) {
+      const engagementRate = dashboard.engagement.rate || 0;
       
       return {
         followers: { 
-          value: dashboard.profile?.followers ?? unifiedChartData[unifiedChartData.length - 1].followers, 
-          change: engagementRateNum || 5.2
+          value: dashboard.profile?.stats?.followers ?? unifiedChartData[unifiedChartData.length - 1].followers, 
+          change: engagementRate > 100 ? 5.2 : engagementRate // Cap display for very high rates
         },
         likes: { 
-          value: dashboard.stats.totalLikes, 
-          change: engagementRateNum || 18.2
+          value: dashboard.engagement.totalLikes, 
+          change: 18.2
         },
         comments: { 
-          value: dashboard.stats.totalComments, 
+          value: dashboard.engagement.totalComments, 
           change: 24.5 
         },
       };

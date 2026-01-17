@@ -11,14 +11,17 @@ export interface ApiError {
 
 // Profile types
 export interface ProfileData {
+  id: string;
   username: string;
-  followers: number;
-  following: number;
-  posts: number;
-  accountType: string;
+  name: string;
+  biography?: string;
   profilePicture?: string;
-  bio?: string;
-  isConnected?: boolean;
+  accountType: string;
+  stats: {
+    followers: number;
+    following: number;
+    posts: number;
+  };
 }
 
 export interface ProfileWithEngagement extends ProfileData {
@@ -36,23 +39,32 @@ export interface MediaPost {
   likes: number;
   comments: number;
   engagement: number;
-  timestamp: string;
-  mediaUrl?: string;
-  thumbnailUrl?: string;
+  date: string;
+  thumbnail?: string;
   permalink?: string;
 }
 
 // Dashboard types
 export interface DashboardData {
   profile: ProfileData;
-  stats: {
+  engagement: {
+    rate: number;
     totalLikes: number;
     totalComments: number;
+    totalEngagement: number;
     avgPerPost: number;
-    engagementRate: string;
+    postsAnalyzed: number;
+  };
+  content: {
+    breakdown: {
+      IMAGE: number;
+      VIDEO: number;
+      CAROUSEL_ALBUM: number;
+    };
+    totalPosts: number;
+    postingFrequency: string;
   };
   topPosts: MediaPost[];
-  recentPosts: MediaPost[];
 }
 
 // Chart data types
