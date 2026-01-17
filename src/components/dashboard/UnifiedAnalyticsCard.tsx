@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { BarChart3, Globe, RotateCcw } from "lucide-react";
+import { BarChart3, Globe, RotateCcw, MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlobeMap } from "./GlobeMap";
 import { MetricWidget, type MetricType } from "./MetricWidget";
@@ -22,6 +22,7 @@ export function UnifiedAnalyticsCard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "map">("analytics");
   const [activeMetric, setActiveMetric] = useState<MetricType>("all");
   const [dateRange, setDateRange] = useState("30");
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const totals = useMemo(() => {
     const lastData = unifiedChartData[unifiedChartData.length - 1];
@@ -148,12 +149,44 @@ export function UnifiedAnalyticsCard() {
       {/* Thin vertical separator */}
       <div className="hidden lg:block w-px bg-border/50" />
 
-      {/* Right: Floating Chatbot Panel */}
-      <div className="w-full lg:w-[340px] xl:w-[380px] flex">
+      {/* Right: Floating Chatbot Panel - Desktop only */}
+      <div className="hidden lg:flex w-[340px] xl:w-[380px]">
         <div className="bg-transparent rounded-2xl overflow-hidden flex-1 sticky top-4">
           <ReportingChatbot />
         </div>
       </div>
+
+      {/* Mobile: Floating chat button */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        className="lg:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-metric-pink to-metric-orange text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
+
+      {/* Mobile: Chat modal */}
+      {isChatOpen && (
+        <>
+          <div 
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsChatOpen(false)}
+          />
+          <div className="lg:hidden fixed inset-4 top-20 bottom-20 z-50 bg-card rounded-2xl border border-border shadow-xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <h3 className="font-semibold text-foreground">Reporting Assistant</h3>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ReportingChatbot />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
