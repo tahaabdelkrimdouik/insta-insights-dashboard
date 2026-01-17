@@ -184,8 +184,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         isCollapsed ? "w-[70px]" : "w-[260px]"
       )} />
 
-      {/* Mobile top spacer */}
-      <div className="lg:hidden h-[60px]" />
     </>
   );
 }
