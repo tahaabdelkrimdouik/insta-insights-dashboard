@@ -9,21 +9,24 @@ import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowersGrowth, useDashboard, useEngagementChart } from "@/hooks/useInstagramApi";
 
-// Fallback mock data for chart
+// Fallback mock data for chart (~15K followers)
 const mockChartData = [
-  { date: "Jan 1", followers: 42000, likes: 1200, comments: 85 },
-  { date: "Jan 5", followers: 42450, likes: 1350, comments: 92 },
-  { date: "Jan 10", followers: 43100, likes: 1480, comments: 110 },
-  { date: "Jan 15", followers: 43800, likes: 1620, comments: 125 },
-  { date: "Jan 20", followers: 44200, likes: 1550, comments: 98 },
-  { date: "Jan 25", followers: 44890, likes: 1780, comments: 145 },
-  { date: "Jan 30", followers: 45892, likes: 1920, comments: 168 },
+  { date: "Jan 1", followers: 12800, likes: 1200, comments: 85 },
+  { date: "Jan 5", followers: 13150, likes: 1350, comments: 92 },
+  { date: "Jan 10", followers: 13480, likes: 1480, comments: 110 },
+  { date: "Jan 15", followers: 13820, likes: 1620, comments: 125 },
+  { date: "Jan 20", followers: 14100, likes: 1550, comments: 98 },
+  { date: "Jan 25", followers: 14450, likes: 1780, comments: 145 },
+  { date: "Jan 30", followers: 14892, likes: 1920, comments: 168 },
 ];
+
+type MetricType = "followers" | "likes" | "comments";
 
 export function UnifiedAnalyticsCard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "map">("analytics");
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeMetric, setActiveMetric] = useState<MetricType | null>(null); // null = show all
 
   const { data: followersData, isLoading: followersLoading, error: followersError, refetch: refetchFollowers } = useFollowersGrowth(Number(dateRange));
   const { data: engagementData, isLoading: engagementLoading, error: engagementError, refetch: refetchEngagement } = useEngagementChart(Number(dateRange));
@@ -92,6 +95,10 @@ export function UnifiedAnalyticsCard() {
     refetchDashboard();
   };
 
+  const handleMetricClick = (metric: MetricType) => {
+    setActiveMetric(prev => prev === metric ? null : metric);
+  };
+
   // Loading skeleton
   if (isLoading) {
     return (
@@ -126,7 +133,7 @@ export function UnifiedAnalyticsCard() {
           </div>
         )}
 
-        {/* Metric Widgets - Stats display only */}
+        {/* Metric Widgets - Clickable to filter curve */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricWidget
             type="followers"
@@ -134,8 +141,8 @@ export function UnifiedAnalyticsCard() {
             value={formatValue(totals.followers.value)}
             change={totals.followers.change}
             color={COLORS.followers}
-            isActive={true}
-            onClick={() => {}}
+            isActive={activeMetric === null || activeMetric === "followers"}
+            onClick={() => handleMetricClick("followers")}
           />
           <MetricWidget
             type="likes"
@@ -143,8 +150,8 @@ export function UnifiedAnalyticsCard() {
             value={formatValue(totals.likes.value)}
             change={totals.likes.change}
             color={COLORS.likes}
-            isActive={true}
-            onClick={() => {}}
+            isActive={activeMetric === null || activeMetric === "likes"}
+            onClick={() => handleMetricClick("likes")}
           />
           <MetricWidget
             type="comments"
@@ -152,8 +159,8 @@ export function UnifiedAnalyticsCard() {
             value={formatValue(totals.comments.value)}
             change={totals.comments.change}
             color={COLORS.comments}
-            isActive={true}
-            onClick={() => {}}
+            isActive={activeMetric === null || activeMetric === "comments"}
+            onClick={() => handleMetricClick("comments")}
           />
         </div>
 
@@ -162,7 +169,9 @@ export function UnifiedAnalyticsCard() {
           {/* Header with internal tabs */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 border-b border-border/50 relative z-20 gap-3">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h2 className="text-sm font-semibold text-foreground">Followers Growth</h2>
+              <h2 className="text-sm font-semibold text-foreground">
+                {activeMetric ? `${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)} Growth` : "Analytics Overview"}
+              </h2>
               <DateFilter value={dateRange} onChange={setDateRange} />
             </div>
             <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg self-start sm:self-auto">
@@ -193,10 +202,9 @@ export function UnifiedAnalyticsCard() {
             </div>
           </div>
 
-          {/* Content area */}
           <div className="p-4 sm:p-5">
             {activeTab === "analytics" ? (
-              <ReportingCurve data={chartData} />
+              <ReportingCurve data={chartData} activeMetric={activeMetric} />
             ) : (
               <GlobeMap />
             )}
