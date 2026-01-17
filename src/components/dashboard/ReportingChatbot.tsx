@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Send, Mic, MicOff, Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,15 +21,6 @@ export function ReportingChatbot() {
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -143,7 +134,7 @@ export function ReportingChatbot() {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
+        
       </div>
 
       {/* Input */}
