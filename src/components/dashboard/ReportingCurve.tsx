@@ -7,8 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { MetricType } from "./MetricWidget";
-
+export type MetricType = "followers" | "likes" | "comments";
 interface ChartDataPoint {
   date: string;
   followers: number;
@@ -16,8 +15,10 @@ interface ChartDataPoint {
   comments?: number;
 }
 
+
 interface ReportingCurveProps {
   data: ChartDataPoint[];
+  activeMetric?: MetricType | null;
 }
 
 // Pink/Orange theme colors
@@ -50,7 +51,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function ReportingCurve({ data }: ReportingCurveProps) {
+export function ReportingCurve({ data, activeMetric = null }: ReportingCurveProps) {
+  const showFollowers = activeMetric === null || activeMetric === "followers";
+  const showLikes = activeMetric === null || activeMetric === "likes";
+  const showComments = activeMetric === null || activeMetric === "comments";
+  
   return (
     <div className="h-[300px] transition-all duration-500 ease-out">
       <ResponsiveContainer width="100%" height="100%">
@@ -104,57 +109,63 @@ export function ReportingCurve({ data }: ReportingCurveProps) {
           />
           <Tooltip content={<CustomTooltip />} />
           
-          <Area
-            type="monotone"
-            dataKey="followers"
-            yAxisId="left"
-            stroke={COLORS.followers}
-            strokeWidth={2.5}
-            fill="url(#colorFollowers)"
-            dot={false}
-            activeDot={{ 
-              r: 6, 
-              fill: COLORS.followers, 
-              strokeWidth: 2, 
-              stroke: "hsl(var(--background))" 
-            }}
-            animationDuration={500}
-            animationEasing="ease-out"
-          />
-          <Area
-            type="monotone"
-            dataKey="likes"
-            yAxisId="right"
-            stroke={COLORS.likes}
-            strokeWidth={2}
-            fill="url(#colorLikes)"
-            dot={false}
-            activeDot={{ 
-              r: 5, 
-              fill: COLORS.likes, 
-              strokeWidth: 2, 
-              stroke: "hsl(var(--background))" 
-            }}
-            animationDuration={500}
-            animationEasing="ease-out"
-          />
-          <Area
-            type="monotone"
-            dataKey="comments"
-            yAxisId="right"
-            stroke={COLORS.comments}
-            strokeWidth={2}
-            fill="url(#colorComments)"
-            dot={false}
-            activeDot={{ 
-              r: 5, 
-              fill: COLORS.comments, 
-              strokeWidth: 2, 
-              stroke: "hsl(var(--background))" 
-            }}
-            animationDuration={500}
-            animationEasing="ease-out"
-          />
+          {showFollowers && (
+            <Area
+              type="monotone"
+              dataKey="followers"
+              yAxisId="left"
+              stroke={COLORS.followers}
+              strokeWidth={2.5}
+              fill="url(#colorFollowers)"
+              dot={false}
+              activeDot={{ 
+                r: 6, 
+                fill: COLORS.followers, 
+                strokeWidth: 2, 
+                stroke: "hsl(var(--background))" 
+              }}
+              animationDuration={500}
+              animationEasing="ease-out"
+            />
+          )}
+          {showLikes && (
+            <Area
+              type="monotone"
+              dataKey="likes"
+              yAxisId="right"
+              stroke={COLORS.likes}
+              strokeWidth={2}
+              fill="url(#colorLikes)"
+              dot={false}
+              activeDot={{ 
+                r: 5, 
+                fill: COLORS.likes, 
+                strokeWidth: 2, 
+                stroke: "hsl(var(--background))" 
+              }}
+              animationDuration={500}
+              animationEasing="ease-out"
+            />
+          )}
+          {showComments && (
+            <Area
+              type="monotone"
+              dataKey="comments"
+              yAxisId="right"
+              stroke={COLORS.comments}
+              strokeWidth={2}
+              fill="url(#colorComments)"
+              dot={false}
+              activeDot={{ 
+                r: 5, 
+                fill: COLORS.comments, 
+                strokeWidth: 2, 
+                stroke: "hsl(var(--background))" 
+              }}
+              animationDuration={500}
+              animationEasing="ease-out"
+            />
+          )}
           
         </AreaChart>
       </ResponsiveContainer>
