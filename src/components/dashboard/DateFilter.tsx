@@ -21,7 +21,7 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
         <SelectTrigger className="w-[160px] bg-card">
           <SelectValue placeholder="Select period" />
         </SelectTrigger>
-        <SelectContent className="bg-card z-10">
+        <SelectContent className="bg-card z-[5]">
           <SelectItem value="7">Last 7 days</SelectItem>
           <SelectItem value="30">Last 30 days</SelectItem>
           <SelectItem value="90">Last 90 days</SelectItem>
