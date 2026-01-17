@@ -1,7 +1,7 @@
-import { TrendingUp, TrendingDown, Users, Heart, MessageCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type MetricType = "followers" | "likes" | "comments" | "all";
+export type MetricType = "engagement" | "likes" | "comments" | "all";
 
 interface MetricWidgetProps {
   type: MetricType;
@@ -14,10 +14,10 @@ interface MetricWidgetProps {
 }
 
 const iconMap = {
-  followers: Users,
+  engagement: Activity,
   likes: Heart,
   comments: MessageCircle,
-  all: Users,
+  all: Activity,
 };
 
 export function MetricWidget({ 

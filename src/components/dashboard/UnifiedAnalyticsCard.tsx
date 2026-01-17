@@ -7,17 +7,17 @@ import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
+import { useEngagementChart, useDashboard } from "@/hooks/useInstagramApi";
 
 // Fallback mock data
 const mockChartData = [
-  { date: "Jan 1", followers: 42000, likes: 1850, comments: 145 },
-  { date: "Jan 5", followers: 42450, likes: 2100, comments: 168 },
-  { date: "Jan 10", followers: 43100, likes: 2450, comments: 192 },
-  { date: "Jan 15", followers: 43800, likes: 2800, comments: 215 },
-  { date: "Jan 20", followers: 44200, likes: 3100, comments: 248 },
-  { date: "Jan 25", followers: 44890, likes: 3450, comments: 276 },
-  { date: "Jan 30", followers: 45892, likes: 3820, comments: 312 },
+  { date: "Jan 1", engagement: 1995, likes: 1850, comments: 145 },
+  { date: "Jan 5", engagement: 2268, likes: 2100, comments: 168 },
+  { date: "Jan 10", engagement: 2642, likes: 2450, comments: 192 },
+  { date: "Jan 15", engagement: 3015, likes: 2800, comments: 215 },
+  { date: "Jan 20", engagement: 3348, likes: 3100, comments: 248 },
+  { date: "Jan 25", engagement: 3726, likes: 3450, comments: 276 },
+  { date: "Jan 30", engagement: 4132, likes: 3820, comments: 312 },
 ];
 
 export function UnifiedAnalyticsCard() {
@@ -26,7 +26,7 @@ export function UnifiedAnalyticsCard() {
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useFollowersGrowth(Number(dateRange));
+  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useEngagementChart(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
   const isLoading = chartLoading || dashboardLoading;
@@ -36,7 +36,7 @@ export function UnifiedAnalyticsCard() {
     if (chartData && chartData.length > 0) {
       return chartData.map(point => ({
         date: point.date,
-        followers: point.followers,
+        engagement: point.engagement,
         likes: point.likes,
         comments: point.comments,
       }));
@@ -50,9 +50,9 @@ export function UnifiedAnalyticsCard() {
       const engagementRate = dashboard.engagement.rate || 0;
       
       return {
-        followers: { 
-          value: dashboard.profile?.stats?.followers ?? unifiedChartData[unifiedChartData.length - 1].followers, 
-          change: engagementRate > 100 ? 5.2 : engagementRate // Cap display for very high rates
+        engagement: { 
+          value: dashboard.engagement.totalLikes + dashboard.engagement.totalComments, 
+          change: engagementRate > 100 ? 5.2 : engagementRate
         },
         likes: { 
           value: dashboard.engagement.totalLikes, 
@@ -71,11 +71,12 @@ export function UnifiedAnalyticsCard() {
     
     const totalLikes = unifiedChartData.reduce((sum, d) => sum + d.likes, 0);
     const totalComments = unifiedChartData.reduce((sum, d) => sum + d.comments, 0);
+    const totalEngagement = totalLikes + totalComments;
     
-    const followersChange = ((lastData.followers - firstData.followers) / firstData.followers) * 100;
+    const engagementChange = ((lastData.engagement - firstData.engagement) / firstData.engagement) * 100;
     
     return {
-      followers: { value: lastData.followers, change: followersChange },
+      engagement: { value: totalEngagement, change: engagementChange },
       likes: { value: totalLikes, change: 18.2 },
       comments: { value: totalComments, change: 24.5 },
     };
@@ -136,13 +137,13 @@ export function UnifiedAnalyticsCard() {
         {/* Metric Widgets - Completely outside curve */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricWidget
-            type="followers"
-            label="Followers"
-            value={formatValue(totals.followers.value)}
-            change={totals.followers.change}
-            color={COLORS.followers}
-            isActive={activeMetric === "all" || activeMetric === "followers"}
-            onClick={() => handleMetricClick("followers")}
+            type="engagement"
+            label="Engagement"
+            value={formatValue(totals.engagement.value)}
+            change={totals.engagement.change}
+            color={COLORS.engagement}
+            isActive={activeMetric === "all" || activeMetric === "engagement"}
+            onClick={() => handleMetricClick("engagement")}
           />
           <MetricWidget
             type="likes"
