@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Plus, MessageSquare, Clock, Sparkles, ChevronRight } from "lucide-react";
+import { Send, Mic, MicOff, Plus, MessageSquare, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { mockConversations, mockAIResponses } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -150,53 +149,14 @@ export function MonetisationTab() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-card rounded-xl border border-border overflow-hidden">
-        {/* Chat Header */}
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-            >
-              <ChevronRight className={cn("h-4 w-4 transition-transform", showHistory && "rotate-180")} />
-            </button>
-            <div className="gradient-accent p-2 rounded-lg">
-              <Sparkles className="h-5 w-5 text-accent-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">AI Growth Assistant</h3>
-              <p className="text-xs text-muted-foreground">Monetisation insights & content strategy</p>
-            </div>
-          </div>
-        </div>
-
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Messages Area */}
-        <ScrollArea className="flex-1 p-4 custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center px-4">
-              <div className="gradient-accent p-4 rounded-2xl mb-4">
-                <Sparkles className="h-8 w-8 text-accent-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">AI Growth Assistant</h3>
-              <p className="text-muted-foreground max-w-md mb-6">
-                Get personalized insights for growth, best posting times, content suggestions, and monetisation strategies.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
-                {[
-                  "What are my best posting times?",
-                  "Give me content ideas",
-                  "Analyze my engagement rate",
-                  "How can I grow faster?",
-                ].map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => setInputValue(prompt)}
-                    className="p-3 text-sm text-left rounded-xl border border-border hover:bg-muted transition-colors"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-center justify-center h-full">
+              <h1 className="text-lg text-muted-foreground text-center font-medium">
+                Ask me about growth strategies, content ideas, or monetisation tips...
+              </h1>
             </div>
           ) : (
             <div className="space-y-4">
@@ -204,36 +164,50 @@ export function MonetisationTab() {
                 <div
                   key={message.id}
                   className={cn(
-                    "flex gap-3 slide-in-right",
-                    message.role === "user" ? "justify-end" : "justify-start"
+                    "flex gap-3 animate-fade-in",
+                    message.role === "user" ? "flex-row-reverse" : "flex-row"
                   )}
                 >
                   {message.role === "assistant" && (
-                    <div className="gradient-accent p-2 rounded-lg h-fit shrink-0">
-                      <Sparkles className="h-4 w-4 text-accent-foreground" />
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {message.role === "user" && (
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-metric-pink to-metric-orange flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%]",
-                      message.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"
+                      "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm",
+                      message.role === "user"
+                        ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white rounded-br-md"
+                        : "bg-muted text-foreground rounded-bl-md"
                     )}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    <p className="text-xs opacity-60 mt-1">{message.timestamp}</p>
+                    <p className="leading-relaxed">{message.content}</p>
+                    <p
+                      className={cn(
+                        "text-[10px] mt-1.5",
+                        message.role === "user" ? "text-white/70" : "text-muted-foreground"
+                      )}
+                    >
+                      {message.timestamp}
+                    </p>
                   </div>
                 </div>
               ))}
               {isTyping && (
-                <div className="flex gap-3 items-start">
-                  <div className="gradient-accent p-2 rounded-lg h-fit">
-                    <Sparkles className="h-4 w-4 text-accent-foreground" />
+                <div className="flex gap-3 animate-fade-in">
+                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
-                  <div className="chat-bubble-ai">
+                  <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
                   </div>
                 </div>
@@ -241,48 +215,43 @@ export function MonetisationTab() {
               <div ref={messagesEndRef} />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
-        {/* Input Area */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-end gap-2">
-            <div className="flex-1 relative">
-              <Textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about growth strategies, content ideas..."
-                className="min-h-[48px] max-h-[120px] resize-none pr-12 bg-muted/50 border-border"
-                rows={1}
-              />
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
+        {/* Input */}
+        <div className="p-3">
+          <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-xl px-3 py-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Ask about growth strategies, content ideas..."
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+            <button
               onClick={toggleRecording}
               className={cn(
-                "shrink-0 h-12 w-12 rounded-xl transition-all",
-                isRecording 
-                  ? "bg-destructive text-destructive-foreground recording-pulse" 
-                  : "bg-muted hover:bg-muted/80"
+                "p-2 rounded-lg transition-all duration-200",
+                isRecording
+                  ? "bg-destructive text-white recording-pulse"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
-              {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-            </Button>
-            <Button
+              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+            <button
               onClick={handleSendMessage}
               disabled={!inputValue.trim()}
-              className="shrink-0 h-12 w-12 rounded-xl gradient-accent text-accent-foreground hover:opacity-90"
+              className={cn(
+                "p-2 rounded-lg transition-all duration-200",
+                inputValue.trim()
+                  ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white hover:opacity-90"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              )}
             >
-              <Send className="h-5 w-5" />
-            </Button>
+              <Send className="w-4 h-4" />
+            </button>
           </div>
-          {isRecording && (
-            <p className="text-xs text-destructive mt-2 flex items-center gap-1">
-              <span className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
-              Recording... Speak now
-            </p>
-          )}
         </div>
       </div>
     </div>
