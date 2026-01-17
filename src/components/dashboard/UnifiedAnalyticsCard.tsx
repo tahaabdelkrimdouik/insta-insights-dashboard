@@ -7,17 +7,17 @@ import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEngagementChart, useDashboard } from "@/hooks/useInstagramApi";
+import { useEngagementChart, useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
 
 // Fallback mock data
 const mockChartData = [
-  { date: "Jan 1", engagement: 1995, likes: 1850, comments: 145 },
-  { date: "Jan 5", engagement: 2268, likes: 2100, comments: 168 },
-  { date: "Jan 10", engagement: 2642, likes: 2450, comments: 192 },
-  { date: "Jan 15", engagement: 3015, likes: 2800, comments: 215 },
-  { date: "Jan 20", engagement: 3348, likes: 3100, comments: 248 },
-  { date: "Jan 25", engagement: 3726, likes: 3450, comments: 276 },
-  { date: "Jan 30", engagement: 4132, likes: 3820, comments: 312 },
+  { date: "Jan 1", followers: 42000, likes: 1850, comments: 145 },
+  { date: "Jan 5", followers: 42450, likes: 2100, comments: 168 },
+  { date: "Jan 10", followers: 43100, likes: 2450, comments: 192 },
+  { date: "Jan 15", followers: 43800, likes: 2800, comments: 215 },
+  { date: "Jan 20", followers: 44200, likes: 3100, comments: 248 },
+  { date: "Jan 25", followers: 44890, likes: 3450, comments: 276 },
+  { date: "Jan 30", followers: 45892, likes: 3820, comments: 312 },
 ];
 
 export function UnifiedAnalyticsCard() {
@@ -26,33 +26,69 @@ export function UnifiedAnalyticsCard() {
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useEngagementChart(Number(dateRange));
+  const { data: engagementData, isLoading: engagementLoading, error: engagementError, refetch: refetchEngagement } = useEngagementChart(Number(dateRange));
+  const { data: followersData, isLoading: followersLoading, error: followersError, refetch: refetchFollowers } = useFollowersGrowth(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
-  const isLoading = chartLoading || dashboardLoading;
+  const isLoading = engagementLoading || followersLoading || dashboardLoading;
+  const hasError = engagementError || followersError || dashboardError;
 
-  // Transform API data to match chart format, or use mock data
+  // Combine followers and engagement data by date
   const unifiedChartData = useMemo(() => {
-    if (chartData && chartData.length > 0) {
-      return chartData.map(point => ({
+    if (followersData && followersData.length > 0 && engagementData && engagementData.length > 0) {
+      // Create a map of engagement data by date
+      const engagementMap = new Map(
+        engagementData.map(point => [point.fullDate, { likes: point.likes, comments: point.comments }])
+      );
+      
+      // Merge followers data with engagement data
+      return followersData.map(point => ({
         date: point.date,
-        engagement: point.engagement,
+        followers: point.total_followers,
+        likes: engagementMap.get(point.fullDate)?.likes || 0,
+        comments: engagementMap.get(point.fullDate)?.comments || 0,
+      }));
+    }
+    
+    // If only followers data is available
+    if (followersData && followersData.length > 0) {
+      return followersData.map(point => ({
+        date: point.date,
+        followers: point.total_followers,
+        likes: 0,
+        comments: 0,
+      }));
+    }
+    
+    // If only engagement data is available
+    if (engagementData && engagementData.length > 0) {
+      return engagementData.map(point => ({
+        date: point.date,
+        followers: 0,
         likes: point.likes,
         comments: point.comments,
       }));
     }
+    
     return mockChartData;
-  }, [chartData]);
+  }, [followersData, engagementData]);
 
   const totals = useMemo(() => {
-    // Use API dashboard engagement data if available
+    // Use API dashboard data if available
     if (dashboard?.engagement) {
-      const engagementRate = dashboard.engagement.rate || 0;
+      const lastFollowers = followersData?.[followersData.length - 1]?.total_followers || 
+                           dashboard.profile?.stats?.followers || 
+                           unifiedChartData[unifiedChartData.length - 1].followers;
+      
+      const firstFollowers = followersData?.[0]?.total_followers || lastFollowers;
+      const followersChange = firstFollowers > 0 
+        ? ((lastFollowers - firstFollowers) / firstFollowers) * 100 
+        : 0;
       
       return {
-        engagement: { 
-          value: dashboard.engagement.totalLikes + dashboard.engagement.totalComments, 
-          change: engagementRate > 100 ? 5.2 : engagementRate
+        followers: { 
+          value: lastFollowers, 
+          change: followersChange
         },
         likes: { 
           value: dashboard.engagement.totalLikes, 
@@ -71,16 +107,17 @@ export function UnifiedAnalyticsCard() {
     
     const totalLikes = unifiedChartData.reduce((sum, d) => sum + d.likes, 0);
     const totalComments = unifiedChartData.reduce((sum, d) => sum + d.comments, 0);
-    const totalEngagement = totalLikes + totalComments;
     
-    const engagementChange = ((lastData.engagement - firstData.engagement) / firstData.engagement) * 100;
+    const followersChange = firstData.followers > 0 
+      ? ((lastData.followers - firstData.followers) / firstData.followers) * 100 
+      : 0;
     
     return {
-      engagement: { value: totalEngagement, change: engagementChange },
+      followers: { value: lastData.followers, change: followersChange },
       likes: { value: totalLikes, change: 18.2 },
       comments: { value: totalComments, change: 24.5 },
     };
-  }, [dashboard, unifiedChartData]);
+  }, [dashboard, unifiedChartData, followersData]);
 
   const formatValue = (value: number) => {
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
@@ -96,7 +133,8 @@ export function UnifiedAnalyticsCard() {
   };
 
   const handleRefresh = () => {
-    refetchChart();
+    refetchEngagement();
+    refetchFollowers();
     refetchDashboard();
   };
 
@@ -125,7 +163,7 @@ export function UnifiedAnalyticsCard() {
       {/* Left: Analytics Section */}
       <div className="flex-1 space-y-4 flex flex-col">
         {/* Error banner */}
-        {(chartError || dashboardError) && (
+        {hasError && (
           <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 text-sm text-warning flex items-center justify-between">
             <span>Using cached data. Unable to reach server.</span>
             <button onClick={handleRefresh} className="p-1 hover:bg-warning/20 rounded">
@@ -137,13 +175,13 @@ export function UnifiedAnalyticsCard() {
         {/* Metric Widgets - Completely outside curve */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricWidget
-            type="engagement"
-            label="Engagement"
-            value={formatValue(totals.engagement.value)}
-            change={totals.engagement.change}
-            color={COLORS.engagement}
-            isActive={activeMetric === "all" || activeMetric === "engagement"}
-            onClick={() => handleMetricClick("engagement")}
+            type="followers"
+            label="Followers"
+            value={formatValue(totals.followers.value)}
+            change={totals.followers.change}
+            color={COLORS.followers}
+            isActive={activeMetric === "all" || activeMetric === "followers"}
+            onClick={() => handleMetricClick("followers")}
           />
           <MetricWidget
             type="likes"
