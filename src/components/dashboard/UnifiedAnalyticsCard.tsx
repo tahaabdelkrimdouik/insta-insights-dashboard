@@ -53,100 +53,103 @@ export function UnifiedAnalyticsCard() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
+    <div className="flex flex-col lg:flex-row gap-6">
       {/* Left: Analytics Section */}
-      <div className="flex-1 bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-        {/* Header with internal tabs */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
-          <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold text-foreground">Performance</h2>
-            {activeMetric !== "all" && (
-              <button
-                onClick={() => setActiveMetric("all")}
-                className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-all duration-200"
-              >
-                <RotateCcw className="w-3 h-3" />
-                Reset
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg">
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200",
-                activeTab === "analytics"
-                  ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <BarChart3 className="w-3.5 h-3.5" />
-              Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab("map")}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200",
-                activeTab === "map"
-                  ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              Map
-            </button>
-          </div>
+      <div className="flex-1 space-y-4">
+        {/* Metric Widgets - Completely outside curve */}
+        <div className="grid grid-cols-3 gap-3">
+          <MetricWidget
+            type="followers"
+            label="Followers"
+            value={formatValue(totals.followers.value)}
+            change={totals.followers.change}
+            color={COLORS.followers}
+            isActive={activeMetric === "all" || activeMetric === "followers"}
+            onClick={() => handleMetricClick("followers")}
+          />
+          <MetricWidget
+            type="likes"
+            label="Total Likes"
+            value={formatValue(totals.likes.value)}
+            change={totals.likes.change}
+            color={COLORS.likes}
+            isActive={activeMetric === "all" || activeMetric === "likes"}
+            onClick={() => handleMetricClick("likes")}
+          />
+          <MetricWidget
+            type="comments"
+            label="Comments"
+            value={formatValue(totals.comments.value)}
+            change={totals.comments.change}
+            color={COLORS.comments}
+            isActive={activeMetric === "all" || activeMetric === "comments"}
+            onClick={() => handleMetricClick("comments")}
+          />
         </div>
 
-        {/* Content area */}
-        <div className="p-5">
-          {activeTab === "analytics" ? (
-            <div className="space-y-5">
-              {/* Metric Widgets - Separate from curve */}
-              <div className="flex flex-wrap gap-3">
-                <MetricWidget
-                  type="followers"
-                  label="Followers"
-                  value={formatValue(totals.followers.value)}
-                  change={totals.followers.change}
-                  color={COLORS.followers}
-                  isActive={activeMetric === "all" || activeMetric === "followers"}
-                  onClick={() => handleMetricClick("followers")}
-                />
-                <MetricWidget
-                  type="likes"
-                  label="Total Likes"
-                  value={formatValue(totals.likes.value)}
-                  change={totals.likes.change}
-                  color={COLORS.likes}
-                  isActive={activeMetric === "all" || activeMetric === "likes"}
-                  onClick={() => handleMetricClick("likes")}
-                />
-                <MetricWidget
-                  type="comments"
-                  label="Comments"
-                  value={formatValue(totals.comments.value)}
-                  change={totals.comments.change}
-                  color={COLORS.comments}
-                  isActive={activeMetric === "all" || activeMetric === "comments"}
-                  onClick={() => handleMetricClick("comments")}
-                />
-              </div>
-
-              {/* Pure Minimalist Curve */}
-              <div className="bg-muted/10 rounded-2xl p-4 border border-border/20">
-                <ReportingCurve data={unifiedChartData} activeMetric={activeMetric} />
-              </div>
+        {/* Pure Curve Container */}
+        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+          {/* Header with internal tabs */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold text-foreground">Performance Trends</h2>
+              {activeMetric !== "all" && (
+                <button
+                  onClick={() => setActiveMetric("all")}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-all duration-200"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Show all
+                </button>
+              )}
             </div>
-          ) : (
-            <GlobeMap />
-          )}
+            <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg">
+              <button
+                onClick={() => setActiveTab("analytics")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200",
+                  activeTab === "analytics"
+                    ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab("map")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200",
+                  activeTab === "map"
+                    ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                Map
+              </button>
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div className="p-5">
+            {activeTab === "analytics" ? (
+              <ReportingCurve data={unifiedChartData} activeMetric={activeMetric} />
+            ) : (
+              <GlobeMap />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Right: Chatbot Panel */}
-      <div className="w-full lg:w-[320px] xl:w-[360px] bg-card rounded-2xl border border-border overflow-hidden shadow-sm h-[500px] lg:h-auto">
-        <ReportingChatbot />
+      {/* Thin vertical separator */}
+      <div className="hidden lg:block w-px bg-border/50" />
+
+      {/* Right: Floating Chatbot Panel */}
+      <div className="w-full lg:w-[340px] xl:w-[380px]">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm h-[520px] sticky top-4">
+          <ReportingChatbot />
+        </div>
       </div>
     </div>
   );
