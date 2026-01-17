@@ -147,7 +147,7 @@ export function UnifiedAnalyticsCard() {
 
       {/* Right: Floating Chatbot Panel */}
       <div className="w-full lg:w-[340px] xl:w-[380px]">
-        <div className="bg-transparent rounded-2xl   overflow-hidden shadow-sm h-full sticky top-4">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm h-[520px] sticky top-4">
           <ReportingChatbot />
         </div>
       </div>
