@@ -28,7 +28,7 @@ export const queryKeys = {
     posting: ['analytics', 'posting'] as const,
   },
   charts: {
-    engagement: ['charts', 'engagement'] as const,
+    engagement: (days?: number) => ['charts', 'engagement', days] as const,
     breakdown: ['charts', 'breakdown'] as const,
     growth: ['charts', 'growth'] as const,
   },
@@ -118,10 +118,10 @@ export function usePostingPatterns() {
 }
 
 // ============ Chart Hooks ============
-export function useEngagementChart() {
+export function useEngagementChart(days?: number) {
   return useQuery({
-    queryKey: queryKeys.charts.engagement,
-    queryFn: chartService.getEngagementChart,
+    queryKey: queryKeys.charts.engagement(days),
+    queryFn: () => chartService.getEngagementChart(days),
     staleTime: 2 * 60 * 1000,
   });
 }

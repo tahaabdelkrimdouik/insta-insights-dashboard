@@ -26,7 +26,7 @@ export function UnifiedAnalyticsCard() {
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useEngagementChart();
+  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useEngagementChart(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
   const isLoading = chartLoading || dashboardLoading;
