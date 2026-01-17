@@ -10,6 +10,7 @@ import type {
   ContentPerformance,
   PostingPatterns,
   EngagementChartPoint,
+  EngagementChartResponse,
   ContentBreakdown,
   GrowthSimulation,
   HashtagPerformance,
@@ -67,8 +68,11 @@ export const analyticsService = {
 
 // ============ Chart Services ============
 export const chartService = {
-  getEngagementChart: () => 
-    apiClient.get<EngagementChartPoint[]>(API_ENDPOINTS.charts.engagement),
+  getEngagementChart: async (): Promise<EngagementChartPoint[]> => {
+    const response = await apiClient.get<EngagementChartResponse>(API_ENDPOINTS.charts.engagement);
+    // Extract raw data array from the API response
+    return response.raw || [];
+  },
   
   getContentBreakdown: () => 
     apiClient.get<ContentBreakdown[]>(API_ENDPOINTS.charts.contentBreakdown),

@@ -58,9 +58,21 @@ export interface DashboardData {
 // Chart data types
 export interface EngagementChartPoint {
   date: string;
+  fullDate: string;
   likes: number;
   comments: number;
   engagement: number;
+}
+
+// API response format for engagement chart
+export interface EngagementChartResponse {
+  labels: string[];
+  datasets: {
+    likes: number[];
+    comments: number[];
+    engagement: number[];
+  };
+  raw: EngagementChartPoint[];
 }
 
 export interface ContentBreakdown {
