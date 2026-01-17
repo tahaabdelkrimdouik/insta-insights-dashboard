@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Plus, MessageSquare, Clock, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, Mic, MicOff, MessageSquare, Clock, Sparkles, ArrowLeft } from "lucide-react";
 import { mockConversations, mockAIResponses } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -21,13 +19,13 @@ interface Conversation {
 }
 
 export function MonetisationTab() {
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations] = useState<Conversation[]>(mockConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
+  const [isInChat, setIsInChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,20 +36,25 @@ export function MonetisationTab() {
     scrollToBottom();
   }, [messages]);
 
-  const handleNewConversation = () => {
-    setActiveConversation(null);
-    setMessages([]);
-    setShowHistory(false);
-  };
-
   const handleSelectConversation = (conversation: Conversation) => {
     setActiveConversation(conversation);
     setMessages(conversation.messages);
-    setShowHistory(false);
+    setIsInChat(true);
+  };
+
+  const handleBack = () => {
+    setActiveConversation(null);
+    setMessages([]);
+    setIsInChat(false);
   };
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
+
+    // If not in chat mode yet, enter it
+    if (!isInChat) {
+      setIsInChat(true);
+    }
 
     const newUserMessage: Message = {
       id: Date.now().toString(),
@@ -89,7 +92,6 @@ export function MonetisationTab() {
     setIsRecording(!isRecording);
     
     if (!isRecording) {
-      // Mock voice recording
       setTimeout(() => {
         setIsRecording(false);
         setInputValue("What are the best times to post for maximum engagement?");
@@ -98,67 +100,65 @@ export function MonetisationTab() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)] lg:h-[calc(100vh-80px)] gap-4 slide-up">
-      {/* Conversation History Sidebar */}
-      <div
-        className={cn(
-          "bg-card rounded-xl border border-border flex-col transition-all duration-300",
-          showHistory ? "w-80 flex" : "w-0 hidden lg:flex lg:w-80"
-        )}
-      >
-        <div className="p-4 border-b border-border">
-          <Button
-            onClick={handleNewConversation}
-            className="w-full gradient-accent text-accent-foreground hover:opacity-90"
+    <div className="flex flex-col h-[calc(100vh-120px)] lg:h-[calc(100vh-80px)] slide-up">
+      {/* Back button - only visible when in chat */}
+      {isInChat && (
+        <div className="mb-4">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Conversation
-          </Button>
+            <ArrowLeft className="w-4 h-4" />
+            Back to conversations
+          </button>
         </div>
-        
-        <ScrollArea className="flex-1 custom-scrollbar">
-          <div className="p-2 space-y-1">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => handleSelectConversation(conv)}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg transition-colors",
-                  activeConversation?.id === conv.id
-                    ? "bg-accent/10 border border-accent/20"
-                    : "hover:bg-muted"
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-muted shrink-0">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{conv.title}</p>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.preview}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{conv.date}</span>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+      )}
 
-      {/* Main Chat Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Messages Area */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <h1 className="text-lg text-muted-foreground text-center font-medium">
+        {/* Show conversation cards when not in chat */}
+        {!isInChat && messages.length === 0 ? (
+          <div className="flex-1 flex flex-col">
+            {/* Placeholder */}
+            <div className="text-center py-8">
+              <h1 className="text-lg text-muted-foreground font-medium mb-6">
                 Ask me about growth strategies, content ideas, or monetisation tips...
               </h1>
             </div>
-          ) : (
+
+            {/* Previous conversations grid */}
+            {conversations.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-foreground mb-3">Previous conversations</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={() => handleSelectConversation(conv)}
+                      className="text-left p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-muted shrink-0">
+                          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{conv.title}</p>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.preview}</p>
+                          <div className="flex items-center gap-1 mt-2">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{conv.date}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Chat messages area */
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -214,8 +214,8 @@ export function MonetisationTab() {
               )}
               <div ref={messagesEndRef} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Input */}
         <div className="p-3">
