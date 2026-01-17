@@ -12,8 +12,8 @@ import type { MetricType } from "./MetricWidget";
 interface ChartDataPoint {
   date: string;
   followers: number;
-  likes: number;
-  comments: number;
+  reach: number;
+  dailyGain: number;
 }
 
 interface ReportingCurveProps {
@@ -24,8 +24,8 @@ interface ReportingCurveProps {
 // Pink/Orange theme colors
 export const COLORS = {
   followers: "hsl(340, 82%, 65%)",
-  likes: "hsl(25, 95%, 60%)",
-  comments: "hsl(280, 60%, 70%)",
+  reach: "hsl(25, 95%, 60%)",
+  dailyGain: "hsl(280, 60%, 70%)",
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -53,12 +53,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
   const showFollowers = activeMetric === "all" || activeMetric === "followers";
-  const showLikes = activeMetric === "all" || activeMetric === "likes";
-  const showComments = activeMetric === "all" || activeMetric === "comments";
+  const showReach = activeMetric === "all" || activeMetric === "reach";
+  const showDailyGain = activeMetric === "all" || activeMetric === "dailyGain";
 
   // Determine which Y-axis to use based on active metric
   const useFollowersAxis = showFollowers;
-  const useLikesCommentsAxis = showLikes || showComments;
+  const useSecondaryAxis = showReach || showDailyGain;
 
   return (
     <div className="h-[300px] transition-all duration-500 ease-out">
@@ -69,13 +69,13 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
               <stop offset="5%" stopColor={COLORS.followers} stopOpacity={0.4} />
               <stop offset="95%" stopColor={COLORS.followers} stopOpacity={0.05} />
             </linearGradient>
-            <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.likes} stopOpacity={0.4} />
-              <stop offset="95%" stopColor={COLORS.likes} stopOpacity={0.05} />
+            <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.reach} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.reach} stopOpacity={0.05} />
             </linearGradient>
-            <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.comments} stopOpacity={0.4} />
-              <stop offset="95%" stopColor={COLORS.comments} stopOpacity={0.05} />
+            <linearGradient id="colorDailyGain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.dailyGain} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.dailyGain} stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid 
@@ -104,15 +104,15 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
               dx={-10}
             />
           )}
-          {useLikesCommentsAxis && (
+          {useSecondaryAxis && (
             <YAxis
-              yAxisId="likesComments"
+              yAxisId="secondary"
               orientation={useFollowersAxis ? "right" : "left"}
               stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => value.toLocaleString()}
+              tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value.toLocaleString()}
               dx={useFollowersAxis ? 10 : -10}
             />
           )}
@@ -137,18 +137,18 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
               animationEasing="ease-out"
             />
           )}
-          {showLikes && (
+          {showReach && (
             <Area
-              yAxisId="likesComments"
+              yAxisId="secondary"
               type="monotone"
-              dataKey="likes"
-              stroke={COLORS.likes}
+              dataKey="reach"
+              stroke={COLORS.reach}
               strokeWidth={2.5}
-              fill="url(#colorLikes)"
+              fill="url(#colorReach)"
               dot={false}
               activeDot={{ 
                 r: 6, 
-                fill: COLORS.likes, 
+                fill: COLORS.reach, 
                 strokeWidth: 2, 
                 stroke: "hsl(var(--background))" 
               }}
@@ -156,18 +156,18 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
               animationEasing="ease-out"
             />
           )}
-          {showComments && (
+          {showDailyGain && (
             <Area
-              yAxisId="likesComments"
+              yAxisId="secondary"
               type="monotone"
-              dataKey="comments"
-              stroke={COLORS.comments}
+              dataKey="dailyGain"
+              stroke={COLORS.dailyGain}
               strokeWidth={2.5}
-              fill="url(#colorComments)"
+              fill="url(#colorDailyGain)"
               dot={false}
               activeDot={{ 
                 r: 6, 
-                fill: COLORS.comments, 
+                fill: COLORS.dailyGain, 
                 strokeWidth: 2, 
                 stroke: "hsl(var(--background))" 
               }}

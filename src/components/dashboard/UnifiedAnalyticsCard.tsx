@@ -7,17 +7,17 @@ import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEngagementChart, useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
+import { useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
 
 // Fallback mock data
 const mockChartData = [
-  { date: "Jan 1", followers: 42000, likes: 1850, comments: 145 },
-  { date: "Jan 5", followers: 42450, likes: 2100, comments: 168 },
-  { date: "Jan 10", followers: 43100, likes: 2450, comments: 192 },
-  { date: "Jan 15", followers: 43800, likes: 2800, comments: 215 },
-  { date: "Jan 20", followers: 44200, likes: 3100, comments: 248 },
-  { date: "Jan 25", followers: 44890, likes: 3450, comments: 276 },
-  { date: "Jan 30", followers: 45892, likes: 3820, comments: 312 },
+  { date: "Jan 1", followers: 42000, reach: 28000, dailyGain: 45 },
+  { date: "Jan 5", followers: 42450, reach: 32000, dailyGain: 90 },
+  { date: "Jan 10", followers: 43100, reach: 45000, dailyGain: 130 },
+  { date: "Jan 15", followers: 43800, reach: 38000, dailyGain: 140 },
+  { date: "Jan 20", followers: 44200, reach: 42000, dailyGain: 80 },
+  { date: "Jan 25", followers: 44890, reach: 55000, dailyGain: 138 },
+  { date: "Jan 30", followers: 45892, reach: 48000, dailyGain: 200 },
 ];
 
 export function UnifiedAnalyticsCard() {
@@ -26,98 +26,52 @@ export function UnifiedAnalyticsCard() {
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { data: engagementData, isLoading: engagementLoading, error: engagementError, refetch: refetchEngagement } = useEngagementChart(Number(dateRange));
   const { data: followersData, isLoading: followersLoading, error: followersError, refetch: refetchFollowers } = useFollowersGrowth(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
-  const isLoading = engagementLoading || followersLoading || dashboardLoading;
-  const hasError = engagementError || followersError || dashboardError;
+  const isLoading = followersLoading || dashboardLoading;
+  const hasError = followersError || dashboardError;
 
-  // Combine followers and engagement data by date
+  // Transform followers data for chart
   const unifiedChartData = useMemo(() => {
-    if (followersData && followersData.length > 0 && engagementData && engagementData.length > 0) {
-      // Create a map of engagement data by date
-      const engagementMap = new Map(
-        engagementData.map(point => [point.fullDate, { likes: point.likes, comments: point.comments }])
-      );
-      
-      // Merge followers data with engagement data
-      return followersData.map(point => ({
-        date: point.date,
-        followers: point.total_followers,
-        likes: engagementMap.get(point.fullDate)?.likes || 0,
-        comments: engagementMap.get(point.fullDate)?.comments || 0,
-      }));
-    }
-    
-    // If only followers data is available
     if (followersData && followersData.length > 0) {
       return followersData.map(point => ({
         date: point.date,
         followers: point.total_followers,
-        likes: 0,
-        comments: 0,
-      }));
-    }
-    
-    // If only engagement data is available
-    if (engagementData && engagementData.length > 0) {
-      return engagementData.map(point => ({
-        date: point.date,
-        followers: 0,
-        likes: point.likes,
-        comments: point.comments,
+        reach: point.reach,
+        dailyGain: point.followers_gained,
       }));
     }
     
     return mockChartData;
-  }, [followersData, engagementData]);
+  }, [followersData]);
 
   const totals = useMemo(() => {
-    // Use API dashboard data if available
-    if (dashboard?.engagement) {
-      const lastFollowers = followersData?.[followersData.length - 1]?.total_followers || 
-                           dashboard.profile?.stats?.followers || 
-                           unifiedChartData[unifiedChartData.length - 1].followers;
-      
-      const firstFollowers = followersData?.[0]?.total_followers || lastFollowers;
-      const followersChange = firstFollowers > 0 
-        ? ((lastFollowers - firstFollowers) / firstFollowers) * 100 
-        : 0;
-      
-      return {
-        followers: { 
-          value: lastFollowers, 
-          change: followersChange
-        },
-        likes: { 
-          value: dashboard.engagement.totalLikes, 
-          change: 18.2
-        },
-        comments: { 
-          value: dashboard.engagement.totalComments, 
-          change: 24.5 
-        },
-      };
-    }
-
-    // Fallback to calculated values from chart data
     const lastData = unifiedChartData[unifiedChartData.length - 1];
     const firstData = unifiedChartData[0];
     
-    const totalLikes = unifiedChartData.reduce((sum, d) => sum + d.likes, 0);
-    const totalComments = unifiedChartData.reduce((sum, d) => sum + d.comments, 0);
+    const totalReach = unifiedChartData.reduce((sum, d) => sum + d.reach, 0);
+    const totalDailyGain = unifiedChartData.reduce((sum, d) => sum + d.dailyGain, 0);
     
     const followersChange = firstData.followers > 0 
       ? ((lastData.followers - firstData.followers) / firstData.followers) * 100 
       : 0;
     
+    // Calculate average daily reach change
+    const avgReach = totalReach / unifiedChartData.length;
+    const firstHalfAvgReach = unifiedChartData.slice(0, Math.floor(unifiedChartData.length / 2)).reduce((sum, d) => sum + d.reach, 0) / Math.floor(unifiedChartData.length / 2);
+    const reachChange = firstHalfAvgReach > 0 ? ((avgReach - firstHalfAvgReach) / firstHalfAvgReach) * 100 : 0;
+    
+    const avgDailyGain = totalDailyGain / unifiedChartData.length;
+    const firstHalfAvgGain = unifiedChartData.slice(0, Math.floor(unifiedChartData.length / 2)).reduce((sum, d) => sum + d.dailyGain, 0) / Math.floor(unifiedChartData.length / 2);
+    const gainChange = firstHalfAvgGain > 0 ? ((avgDailyGain - firstHalfAvgGain) / firstHalfAvgGain) * 100 : 0;
+    
     return {
       followers: { value: lastData.followers, change: followersChange },
-      likes: { value: totalLikes, change: 18.2 },
-      comments: { value: totalComments, change: 24.5 },
+      reach: { value: totalReach, change: reachChange },
+      dailyGain: { value: totalDailyGain, change: gainChange },
     };
-  }, [dashboard, unifiedChartData, followersData]);
+  }, [unifiedChartData]);
 
   const formatValue = (value: number) => {
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
@@ -133,7 +87,6 @@ export function UnifiedAnalyticsCard() {
   };
 
   const handleRefresh = () => {
-    refetchEngagement();
     refetchFollowers();
     refetchDashboard();
   };
@@ -184,22 +137,22 @@ export function UnifiedAnalyticsCard() {
             onClick={() => handleMetricClick("followers")}
           />
           <MetricWidget
-            type="likes"
-            label="Total Likes"
-            value={formatValue(totals.likes.value)}
-            change={totals.likes.change}
-            color={COLORS.likes}
-            isActive={activeMetric === "all" || activeMetric === "likes"}
-            onClick={() => handleMetricClick("likes")}
+            type="reach"
+            label="Total Reach"
+            value={formatValue(totals.reach.value)}
+            change={totals.reach.change}
+            color={COLORS.reach}
+            isActive={activeMetric === "all" || activeMetric === "reach"}
+            onClick={() => handleMetricClick("reach")}
           />
           <MetricWidget
-            type="comments"
-            label="Comments"
-            value={formatValue(totals.comments.value)}
-            change={totals.comments.change}
-            color={COLORS.comments}
-            isActive={activeMetric === "all" || activeMetric === "comments"}
-            onClick={() => handleMetricClick("comments")}
+            type="dailyGain"
+            label="Followers Gained"
+            value={formatValue(totals.dailyGain.value)}
+            change={totals.dailyGain.change}
+            color={COLORS.dailyGain}
+            isActive={activeMetric === "all" || activeMetric === "dailyGain"}
+            onClick={() => handleMetricClick("dailyGain")}
           />
         </div>
 
