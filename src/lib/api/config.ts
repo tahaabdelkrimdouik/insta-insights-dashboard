@@ -1,6 +1,6 @@
 // API Configuration
 // Update this to your Express backend URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://tyrannisingly-dendritic-nayeli.ngrok-free.dev';
 
 export const API_ENDPOINTS = {
   // Auth
