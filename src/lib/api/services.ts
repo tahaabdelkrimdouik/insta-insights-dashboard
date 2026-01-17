@@ -116,3 +116,33 @@ export const insightsService = {
   getAccountValue: () => 
     apiClient.get<AccountValue>(API_ENDPOINTS.insights.accountValue),
 };
+
+// ============ Chat Services ============
+export interface ChatRequest {
+  question: string;
+  mode?: 'content_analyst' | 'growth_strategist' | 'engagement_expert';
+  max_tokens?: number;
+  temperature?: number;
+  n_posts?: number;
+}
+
+export interface ChatResponse {
+  response: string;
+  mode: string;
+  mode_description: string;
+  question: string;
+  relevant_posts_count: number;
+}
+
+export const chatService = {
+  sendMessage: async (request: ChatRequest): Promise<ChatResponse> => {
+    const payload = {
+      question: request.question,
+      mode: request.mode || 'content_analyst',
+      max_tokens: request.max_tokens || 1000,
+      temperature: request.temperature || 0.5,
+      n_posts: request.n_posts || 3,
+    };
+    return apiClient.post<ChatResponse>(API_ENDPOINTS.chat, payload);
+  },
+};
