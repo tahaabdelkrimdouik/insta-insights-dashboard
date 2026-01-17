@@ -86,6 +86,20 @@ export interface EngagementChartPoint {
   engagement: number;
 }
 
+// Followers growth chart point
+export interface FollowersGrowthPoint {
+  date: string;
+  fullDate: string;
+  followers: number;
+  likes: number;
+  comments: number;
+}
+
+// API response format for followers growth chart
+export interface FollowersGrowthResponse {
+  raw: FollowersGrowthPoint[];
+}
+
 // API response format for engagement chart
 export interface EngagementChartResponse {
   labels: string[];

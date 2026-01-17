@@ -7,7 +7,7 @@ import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEngagementChart, useDashboard } from "@/hooks/useInstagramApi";
+import { useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
 
 // Fallback mock data
 const mockChartData = [
@@ -26,7 +26,7 @@ export function UnifiedAnalyticsCard() {
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useEngagementChart(Number(dateRange));
+  const { data: chartData, isLoading: chartLoading, error: chartError, refetch: refetchChart } = useFollowersGrowth(Number(dateRange));
   const { data: dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard();
 
   const isLoading = chartLoading || dashboardLoading;
@@ -36,7 +36,7 @@ export function UnifiedAnalyticsCard() {
     if (chartData && chartData.length > 0) {
       return chartData.map(point => ({
         date: point.date,
-        followers: point.engagement, // Use engagement as followers metric
+        followers: point.followers,
         likes: point.likes,
         comments: point.comments,
       }));
