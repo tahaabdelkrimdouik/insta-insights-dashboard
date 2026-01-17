@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, LLM_API_URL } from './config';
 import type { ApiResponse, ApiError } from './types';
 
 class ApiClient {
@@ -71,3 +71,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+export const llmClient = new ApiClient(LLM_API_URL);
