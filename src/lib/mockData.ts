@@ -190,3 +190,76 @@ export const latestPosts = [
     time: "2 days ago",
   },
 ];
+
+// Mock chat conversations for Monetisation tab
+export const mockConversations = [
+  {
+    id: "1",
+    title: "Growth Strategy",
+    preview: "Let's analyze your best posting times...",
+    date: "Today",
+    messages: [
+      {
+        id: "1",
+        role: "user" as const,
+        content: "What are my best posting times for maximum engagement?",
+        timestamp: "10:30 AM",
+      },
+      {
+        id: "2",
+        role: "assistant" as const,
+        content: "Based on your analytics, your audience is most active between 6-8 PM on weekdays and 10 AM-12 PM on weekends. Your top performing posts were published on Wednesdays at 7 PM and Saturdays at 11 AM. I recommend scheduling your key content during these peak hours for maximum visibility.",
+        timestamp: "10:30 AM",
+      },
+    ],
+  },
+  {
+    id: "2",
+    title: "Content Ideas",
+    preview: "Here are some trending content ideas...",
+    date: "Yesterday",
+    messages: [
+      {
+        id: "1",
+        role: "user" as const,
+        content: "Give me content ideas for next week",
+        timestamp: "3:15 PM",
+      },
+      {
+        id: "2",
+        role: "assistant" as const,
+        content: "Based on trending topics in your niche and your audience preferences, here are 5 content ideas:\n\n1. Behind-the-scenes of your creative process\n2. Before/after transformation post\n3. Quick tutorial or tip carousel\n4. User-generated content spotlight\n5. Trending audio reel in your style\n\nWould you like me to elaborate on any of these?",
+        timestamp: "3:15 PM",
+      },
+    ],
+  },
+  {
+    id: "3",
+    title: "Hashtag Strategy",
+    preview: "Optimizing your hashtag reach...",
+    date: "Jan 15",
+    messages: [
+      {
+        id: "1",
+        role: "user" as const,
+        content: "What hashtags should I use?",
+        timestamp: "11:00 AM",
+      },
+      {
+        id: "2",
+        role: "assistant" as const,
+        content: "I recommend a mix of hashtag sizes for optimal reach:\n\n**Large (1M+ posts):** #photography, #travel, #instagood\n**Medium (100K-1M):** #creativephotography, #wanderlustlife\n**Small (10K-100K):** #parisphotographer, #frenchcreator\n**Niche (<10K):** #creativestudiolife\n\nUse 20-25 hashtags per post, rotating them to avoid shadowban.",
+        timestamp: "11:01 AM",
+      },
+    ],
+  },
+];
+
+export const mockAIResponses = [
+  "Based on your recent performance data, I'd recommend focusing on carousel posts - they're generating 40% more engagement than single images for your account.",
+  "Your audience engagement peaks between 6-8 PM local time. Consider scheduling your most important posts during this window.",
+  "I notice your Reels are underperforming compared to your static posts. Try adding trending audio and keeping them under 15 seconds for better retention.",
+  "Your top performing content themes are: nature photography (32% of engagement), behind-the-scenes (28%), and tutorial content (24%). Double down on these!",
+  "Looking at your follower growth, you're averaging +150 new followers per week. To accelerate this, I recommend collaborating with creators in adjacent niches.",
+  "Your engagement rate of 4.8% is above the industry average of 3.5%. Great job! To maintain this, keep responding to comments within the first hour of posting.",
+];

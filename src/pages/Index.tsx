@@ -1,21 +1,19 @@
 import { useState } from "react";
-import { Header } from "@/components/dashboard/Header";
-import { TabNavigation } from "@/components/dashboard/TabNavigation";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { ReportingTab } from "@/components/dashboard/ReportingTab";
-import { MonitoringTab } from "@/components/dashboard/MonitoringTab";
+import { MonetisationTab } from "@/components/dashboard/MonetisationTab";
 import { CompteTab } from "@/components/dashboard/CompteTab";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("reporting");
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1 p-4 lg:p-6 overflow-auto">
         {activeTab === "reporting" && <ReportingTab />}
-        {activeTab === "monitoring" && <MonitoringTab />}
+        {activeTab === "monetisation" && <MonetisationTab />}
         {activeTab === "compte" && <CompteTab />}
       </main>
     </div>
