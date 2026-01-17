@@ -36,7 +36,7 @@ export function UnifiedAnalyticsCard() {
     if (chartData && chartData.length > 0) {
       return chartData.map(point => ({
         date: point.date,
-        followers: point.engagement, // Map engagement to followers for display
+        followers: point.engagement, // Use engagement as followers metric
         likes: point.likes,
         comments: point.comments,
       }));
