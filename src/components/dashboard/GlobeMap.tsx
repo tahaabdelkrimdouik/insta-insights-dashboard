@@ -77,7 +77,7 @@ export function GlobeMap() {
             width={dimensions.width}
             height={dimensions.height}
             backgroundColor="rgba(0,0,0,0)"
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
             atmosphereColor="#f97316"
             atmosphereAltitude={0.18}
             pointsData={pointsData}
