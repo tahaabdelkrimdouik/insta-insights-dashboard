@@ -45,13 +45,15 @@ export interface ProfileWithEngagement {
 export interface MediaPost {
   id: string;
   type: string;
+  mediaUrl?: string;
+  thumbnail?: string;
+  permalink?: string;
   caption?: string;
+  date: string;
+  dateFormatted?: string;
   likes: number;
   comments: number;
   engagement: number;
-  date: string;
-  thumbnail?: string;
-  permalink?: string;
 }
 
 // Dashboard types
