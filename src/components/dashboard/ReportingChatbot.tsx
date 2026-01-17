@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Send, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -16,7 +16,6 @@ export function ReportingChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(prev => prev + (prev ? " " : "") + transcript);
@@ -24,13 +23,8 @@ export function ReportingChatbot() {
 
   const { isRecording, toggleRecording, isSupported } = useSpeechRecognition({
     onResult: handleVoiceResult,
-    language: "fr-FR", // French for the API
+    language: "fr-FR",
   });
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -137,7 +131,6 @@ export function ReportingChatbot() {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
