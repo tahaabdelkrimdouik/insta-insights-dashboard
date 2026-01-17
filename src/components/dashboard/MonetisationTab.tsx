@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Clock, Sparkles, ArrowLeft, DollarSign, Loader2, RefreshCw } from "lucide-react";
+import { Send, MessageSquare, Clock, Sparkles, ArrowLeft, DollarSign, RefreshCw } from "lucide-react";
 import { mockConversations } from "@/lib/mockData";
 import { useAccountValue } from "@/hooks/useInstagramApi";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Gemini API Configuration
-const GEMINI_API_KEY = "k";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_URL = process.env.NEXT_PUBLIC_GEMINI_API_URL;
 
-// Stats endpoints
-const STATS_BASE_URL = "https://tyrannisingly-dendritic-nayeli.ngrok-free.dev";
+const STATS_BASE_URL = process.env.NEXT_PUBLIC_STATS_BASE_URL;
 
 interface Message {
   id: string;
@@ -36,7 +34,6 @@ export function MonetisationTab() {
   const [showAllConversations, setShowAllConversations] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [streamingContent, setStreamingContent] = useState("");
 
   // Store fetched data
   const [profileData, setProfileData] = useState<unknown>(null);
@@ -81,14 +78,6 @@ export function MonetisationTab() {
     fetchData();
   }, [fetchData]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent]);
-
   const handleSelectConversation = (conversation: Conversation) => {
     setMessages(conversation.messages);
     setIsInChat(true);
@@ -113,20 +102,6 @@ export function MonetisationTab() {
     setCurrentConversationId(null);
   };
 
-  // Stream text with typing effect
-  const streamText = async (text: string, onUpdate: (text: string) => void) => {
-    let currentText = "";
-    const words = text.split(" ");
-
-    for (let i = 0; i < words.length; i++) {
-      currentText += (i === 0 ? "" : " ") + words[i];
-      onUpdate(currentText);
-      await new Promise(resolve => setTimeout(resolve, 30)); // 30ms between words
-    }
-
-    return currentText;
-  };
-
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim()) return;
 
@@ -146,62 +121,86 @@ export function MonetisationTab() {
     setMessages((prev) => [...prev, newUserMessage]);
     setInputValue("");
     setIsTyping(true);
-    setStreamingContent("");
 
-    // Build focused prompt
-    const systemContext = `You are an Instagram growth expert. You have the user's Instagram data below.
+    const systemContext = `You are an expert Instagram growth strategist and monetization consultant. You have access to the user's complete Instagram analytics data. Your role is to provide actionable, data-driven insights to help them grow their account and monetize effectively.
 
-PROFILE: ${JSON.stringify(profileData)}
-MEDIA: ${JSON.stringify(mediaData)}
+=== ACCOUNT PROFILE DATA ===
+${JSON.stringify(profileData, null, 2)}
 
-RULES:
-- Answer ONLY what the user asks
-- Be concise and specific
-- Use actual numbers from their data
-- Give actionable advice
-- Use bullet points for lists
-- Keep responses focused (2-4 paragraphs max)`;
+=== MEDIA/POSTS DATA (includes engagement, likes, comments, reach, impressions) ===
+${JSON.stringify(mediaData, null, 2)}
+
+=== YOUR EXPERTISE ===
+You can help with:
+1. Content Strategy - Analyze what content performs best
+2. Engagement Optimization - How to increase likes, comments, saves
+3. Best Posting Times - Based on when their audience is most active
+4. Hashtag Strategy - Relevant hashtags to increase reach
+5. Monetization - Brand deals, affiliate marketing, based on their engagement
+6. Growth Tactics - Strategies to grow followers organically
+7. Content Calendar - Planning and scheduling recommendations
+
+=== RESPONSE GUIDELINES ===
+- Be specific and reference actual data from their account
+- Use numbers and percentages when discussing performance
+- Provide actionable steps, not just generic advice
+- Format responses clearly with sections and bullet points
+- Be encouraging but honest about areas needing improvement`;
 
     try {
       const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: `${systemContext}\n\nUser: ${userQuestion}` }] }],
+          contents: [
+            {
+              parts: [
+                {
+                  text: `${systemContext}\n\nUser Question: ${userQuestion}`
+                }
+              ]
+            }
+          ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 4096,
           }
         })
       });
 
       const data = await response.json();
-      const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
 
-      // Stream the response
-      await streamText(fullText, (text) => {
-        setStreamingContent(text);
-      });
-
-      // Add final message
-      const newAIMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: fullText,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, newAIMessage]);
-      setStreamingContent("");
-
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        const responseText = data.candidates[0].content.parts[0].text;
+        const newAIMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: responseText,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, newAIMessage]);
+      } else {
+        const newAIMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "I couldn't generate a response. Please try again.",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, newAIMessage]);
+      }
     } catch (error) {
-      console.error("API error:", error);
-      setMessages((prev) => [...prev, {
+      console.log("API error:", error);
+      const newAIMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "Sorry, there was an error. Please try again.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      }]);
-      setStreamingContent("");
+      };
+      setMessages((prev) => [...prev, newAIMessage]);
     } finally {
       setIsTyping(false);
     }
@@ -239,7 +238,7 @@ RULES:
             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isLoadingData && "animate-spin")} />
-            Refresh
+            Refresh Data
           </button>
         </div>
       )}
@@ -254,13 +253,14 @@ RULES:
                 AI Instagram Insights
               </h1>
               <p className="text-sm text-muted-foreground mt-2">
-                {isLoadingData ? "Loading your data..." : "Ask me anything about your Instagram"}
+                {isLoadingData ? "Loading your Instagram data..." : "Powered by Gemini AI"}
               </p>
             </div>
 
             {isLoadingData ? (
               <div className="space-y-4">
                 <Skeleton className="h-32 rounded-xl" />
+                <Skeleton className="h-24 rounded-xl" />
               </div>
             ) : (
               <>
@@ -283,7 +283,32 @@ RULES:
                 </div>
 
                 {/* Account Value */}
-
+                {(accountValueLoading || accountValue) && (
+                  <div className="mb-6">
+                    {accountValueLoading ? (
+                      <Skeleton className="h-24 rounded-xl" />
+                    ) : accountValue && (
+                      <div className="bg-gradient-to-br from-metric-pink/10 to-metric-orange/10 border border-border rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-gradient-to-br from-metric-pink to-metric-orange">
+                            <DollarSign className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Estimated Per Post Value</p>
+                            <p className="text-2xl font-bold text-foreground">
+                              {accountValue.perPost}
+                            </p>
+                            {accountValue.monthlyPotential && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Monthly potential: {accountValue.monthlyPotential}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Previous conversations */}
                 {conversations.length > 0 && (
@@ -326,7 +351,7 @@ RULES:
             )}
           </div>
         ) : (
-          /* Chat messages */
+          /* Chat messages area */
           <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
             <div className="space-y-4">
               {messages.map((message) => (
@@ -338,76 +363,50 @@ RULES:
                   )}
                 >
                   {message.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                   )}
                   {message.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-metric-pink to-metric-orange flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-metric-pink to-metric-orange flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
                   <div
                     className={cn(
-                      "max-w-[85%] rounded-2xl px-4 py-3 text-sm",
+                      "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm",
                       message.role === "user"
                         ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white rounded-br-md"
-                        : "bg-muted rounded-bl-md"
+                        : "bg-muted text-foreground rounded-bl-md"
                     )}
                   >
-                    <div className="leading-relaxed whitespace-pre-wrap">{message.content}</div>
-                    <p className={cn("text-[10px] mt-2", message.role === "user" ? "text-white/70" : "text-muted-foreground")}>
+                    <p className="leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    <p
+                      className={cn(
+                        "text-[10px] mt-1.5",
+                        message.role === "user" ? "text-white/70" : "text-muted-foreground"
+                      )}
+                    >
                       {message.timestamp}
                     </p>
                   </div>
                 </div>
               ))}
-
-              {/* Streaming message */}
-              {isTyping && streamingContent && (
+              {isTyping && (
                 <div className="flex gap-3 animate-fade-in">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="max-w-[85%] rounded-2xl rounded-bl-md px-4 py-3 text-sm bg-muted">
-                    <div className="leading-relaxed whitespace-pre-wrap">{streamingContent}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Loading dots when waiting for response */}
-              {isTyping && !streamingContent && (
-                <div className="flex gap-3 animate-fade-in">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
                   <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <span className="w-2 h-2 bg-violet-500/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-violet-500/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-violet-500/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
-            </div>
-          </div>
-        )}
-
-        {/* Quick actions in chat */}
-        {isInChat && messages.length > 0 && !isTyping && (
-          <div className="px-3 pb-2">
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {quickActions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={() => setInputValue(action.query)}
-                  className="flex-shrink-0 px-3 py-1.5 text-xs rounded-full border border-border hover:bg-muted/50 hover:border-violet-500/30 transition-all"
-                >
-                  {action.label}
-                </button>
-              ))}
             </div>
           </div>
         )}
@@ -439,7 +438,7 @@ RULES:
                     : "bg-muted text-muted-foreground cursor-not-allowed"
                 )}
               >
-                {isTyping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                <Send className="w-4 h-4" />
               </button>
             </div>
           </div>
