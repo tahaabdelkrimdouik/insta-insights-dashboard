@@ -11,7 +11,6 @@ interface SidebarProps {
 const menuItems = [
   { id: "reporting", label: "Reporting", icon: BarChart3 },
   { id: "monetisation", label: "Monetisation", icon: DollarSign },
-  { id: "compte", label: "Compte", icon: User },
 ];
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -90,20 +89,32 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* Logo with collapse toggle */}
           <div className={cn(
-            "flex items-center gap-3 px-4 py-6 border-b border-sidebar-border",
+            "flex items-center justify-between px-4 py-6 border-b border-sidebar-border",
             isCollapsed && "justify-center px-2"
           )}>
-            <div className="gradient-accent rounded-lg p-2 shrink-0">
-              <BarChart3 className="h-6 w-6 text-white" />
-            </div>
-            {!isCollapsed && (
-              <div className="fade-in">
-                <h1 className="text-xl font-bold text-sidebar-foreground">InstaMetrics</h1>
-                <p className="text-xs text-sidebar-foreground/60">Analytics Dashboard</p>
+            <div className="flex items-center gap-3">
+              <div className="gradient-accent rounded-lg p-2 shrink-0">
+                <BarChart3 className="h-6 w-6 text-white" />
               </div>
-            )}
+              {!isCollapsed && (
+                <div className="fade-in">
+                  <h1 className="text-xl font-bold text-sidebar-foreground">InstaMetrics</h1>
+                  <p className="text-xs text-sidebar-foreground/60">Analytics Dashboard</p>
+                </div>
+              )}
+            </div>
+            {/* Collapse Button (Desktop Only) */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={cn(
+                "hidden lg:flex items-center justify-center p-1.5 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
+                isCollapsed && "absolute right-2"
+              )}
+            >
+              <ChevronLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+            </button>
           </div>
 
           {/* Navigation */}
@@ -151,16 +162,19 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               {!isCollapsed && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
             </button>
 
-            {/* Collapse Button (Desktop Only) */}
+            {/* Account Button at bottom */}
             <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={() => handleTabChange("compte")}
               className={cn(
-                "hidden lg:flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
+                "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                activeTab === "compte"
+                  ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                 isCollapsed && "justify-center px-2"
               )}
             >
-              <ChevronLeft className={cn("h-5 w-5 transition-transform", isCollapsed && "rotate-180")} />
-              {!isCollapsed && <span>Collapse</span>}
+              <User className={cn("h-5 w-5 shrink-0", activeTab === "compte" && "text-white")} />
+              {!isCollapsed && <span>Compte</span>}
             </button>
           </div>
         </div>
