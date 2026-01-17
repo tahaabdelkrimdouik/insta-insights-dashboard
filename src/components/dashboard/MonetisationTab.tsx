@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, MessageSquare, Clock, Sparkles, ArrowLeft } from "lucide-react";
+import { Send, Mic, MicOff, MessageSquare, Clock, Sparkles, ArrowLeft, DollarSign } from "lucide-react";
 import { mockConversations, mockAIResponses } from "@/lib/mockData";
+import { useAccountValue } from "@/hooks/useInstagramApi";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Message {
   id: string;
@@ -29,6 +31,8 @@ export function MonetisationTab() {
   const [showAllConversations, setShowAllConversations] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: accountValue, isLoading: accountValueLoading } = useAccountValue();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -151,6 +155,34 @@ export function MonetisationTab() {
                 Your Monetisation Assistant
               </h1>
             </div>
+
+            {/* Account Value Card - From API */}
+            {(accountValueLoading || accountValue) && (
+              <div className="mb-6">
+                {accountValueLoading ? (
+                  <Skeleton className="h-24 rounded-xl" />
+                ) : accountValue && (
+                  <div className="bg-gradient-to-br from-metric-pink/10 to-metric-orange/10 border border-border rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-metric-pink to-metric-orange">
+                        <DollarSign className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Estimated Per Post Value</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {accountValue.perPost}
+                        </p>
+                        {accountValue.monthlyPotential && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Monthly potential: {accountValue.monthlyPotential}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Previous conversations grid */}
             {conversations.length > 0 && (
