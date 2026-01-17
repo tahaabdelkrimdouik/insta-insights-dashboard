@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Mic, MicOff, MessageSquare, Clock, Sparkles, ArrowLeft, DollarSign } from "lucide-react";
 import { mockConversations, mockAIResponses } from "@/lib/mockData";
 import { useAccountValue } from "@/hooks/useInstagramApi";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface Message {
   id: string;
@@ -25,7 +26,6 @@ export function MonetisationTab() {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isInChat, setIsInChat] = useState(false);
   const [showAllConversations, setShowAllConversations] = useState(false);
@@ -33,6 +33,15 @@ export function MonetisationTab() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: accountValue, isLoading: accountValueLoading } = useAccountValue();
+
+  const handleVoiceResult = useCallback((transcript: string) => {
+    setInputValue(prev => prev + (prev ? " " : "") + transcript);
+  }, []);
+
+  const { isRecording, toggleRecording, isSupported } = useSpeechRecognition({
+    onResult: handleVoiceResult,
+    language: "en-US",
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -118,16 +127,7 @@ export function MonetisationTab() {
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    
-    if (!isRecording) {
-      setTimeout(() => {
-        setIsRecording(false);
-        setInputValue("What are the best times to post for maximum engagement?");
-      }, 2000);
-    }
-  };
+  // toggleRecording is now provided by useSpeechRecognition hook
 
   return (
     <div className="flex flex-col h-full min-h-0 slide-up px-6 md:px-12 lg:px-16">

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Send, Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface Message {
   id: string;
@@ -19,8 +20,16 @@ const mockResponses = [
 export function ReportingChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+
+  const handleVoiceResult = useCallback((transcript: string) => {
+    setInput(prev => prev + (prev ? " " : "") + transcript);
+  }, []);
+
+  const { isRecording, toggleRecording, isSupported, transcript } = useSpeechRecognition({
+    onResult: handleVoiceResult,
+    language: "en-US",
+  });
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -53,17 +62,6 @@ export function ReportingChatbot() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
-    }
-  };
-
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    if (!isRecording) {
-      // Mock voice input
-      setTimeout(() => {
-        setInput("What's my follower growth this month?");
-        setIsRecording(false);
-      }, 2000);
     }
   };
 
