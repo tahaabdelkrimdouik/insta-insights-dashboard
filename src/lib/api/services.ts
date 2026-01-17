@@ -11,6 +11,8 @@ import type {
   PostingPatterns,
   EngagementChartPoint,
   EngagementChartResponse,
+  FollowersGrowthPoint,
+  FollowersGrowthResponse,
   ContentBreakdown,
   GrowthSimulation,
   HashtagPerformance,
@@ -70,17 +72,25 @@ export const analyticsService = {
 export const chartService = {
   getEngagementChart: async (days?: number): Promise<EngagementChartPoint[]> => {
     const response = await apiClient.get<EngagementChartResponse>(API_ENDPOINTS.charts.engagement);
-    // Extract raw data array from the API response
     let data = response.raw || [];
     
-    // Filter by date range if specified
     if (days && data.length > 0) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      data = data.filter(point => {
-        const pointDate = new Date(point.fullDate);
-        return pointDate >= cutoffDate;
-      });
+      data = data.filter(point => new Date(point.fullDate) >= cutoffDate);
+    }
+    
+    return data;
+  },
+
+  getFollowersGrowth: async (days?: number): Promise<FollowersGrowthPoint[]> => {
+    const response = await apiClient.get<FollowersGrowthResponse>(API_ENDPOINTS.charts.followersGrowth);
+    let data = response.raw || [];
+    
+    if (days && data.length > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      data = data.filter(point => new Date(point.fullDate) >= cutoffDate);
     }
     
     return data;

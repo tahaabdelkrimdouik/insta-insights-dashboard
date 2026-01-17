@@ -29,6 +29,7 @@ export const queryKeys = {
   },
   charts: {
     engagement: (days?: number) => ['charts', 'engagement', days] as const,
+    followersGrowth: (days?: number) => ['charts', 'followersGrowth', days] as const,
     breakdown: ['charts', 'breakdown'] as const,
     growth: ['charts', 'growth'] as const,
   },
@@ -122,6 +123,14 @@ export function useEngagementChart(days?: number) {
   return useQuery({
     queryKey: queryKeys.charts.engagement(days),
     queryFn: () => chartService.getEngagementChart(days),
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useFollowersGrowth(days?: number) {
+  return useQuery({
+    queryKey: queryKeys.charts.followersGrowth(days),
+    queryFn: () => chartService.getFollowersGrowth(days),
     staleTime: 2 * 60 * 1000,
   });
 }
