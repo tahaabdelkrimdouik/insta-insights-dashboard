@@ -4,14 +4,12 @@ import { UnifiedAnalyticsCard } from "./UnifiedAnalyticsCard";
 export function ReportingTab() {
   return (
     <div className="space-y-6 slide-up">
-      {/* Header with friendly title */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Hey there! Let's explore your growth 👋
-          </h2>
-          <p className="text-muted-foreground">Your Instagram insights, simplified</p>
-        </div>
+      {/* Header with friendly title - centered */}
+      <div className="text-center py-4">
+        <h2 className="text-2xl font-bold text-foreground">
+          Welcome back to your reporting space 👋
+        </h2>
+        <p className="text-muted-foreground mt-1">Your Instagram insights, simplified</p>
       </div>
 
       {/* Unified Analytics Card - Datafast-inspired */}

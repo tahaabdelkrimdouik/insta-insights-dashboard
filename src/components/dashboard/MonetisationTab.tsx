@@ -19,13 +19,15 @@ interface Conversation {
 }
 
 export function MonetisationTab() {
-  const [conversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isInChat, setIsInChat] = useState(false);
+  const [showAllConversations, setShowAllConversations] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -43,17 +45,41 @@ export function MonetisationTab() {
   };
 
   const handleBack = () => {
+    // Save current conversation to list if it has messages
+    if (messages.length > 0 && currentConversationId) {
+      const existingIndex = conversations.findIndex(c => c.id === currentConversationId);
+      if (existingIndex === -1) {
+        // New conversation - add to list
+        const newConversation: Conversation = {
+          id: currentConversationId,
+          title: messages[0]?.content.slice(0, 40) + (messages[0]?.content.length > 40 ? "..." : "") || "New conversation",
+          preview: messages[messages.length - 1]?.content.slice(0, 50) + "..." || "",
+          date: "Just now",
+          messages: messages,
+        };
+        setConversations(prev => [newConversation, ...prev]);
+      } else {
+        // Update existing conversation
+        setConversations(prev => prev.map(c => 
+          c.id === currentConversationId 
+            ? { ...c, messages, preview: messages[messages.length - 1]?.content.slice(0, 50) + "..." }
+            : c
+        ));
+      }
+    }
     setActiveConversation(null);
     setMessages([]);
     setIsInChat(false);
+    setCurrentConversationId(null);
   };
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
 
-    // If not in chat mode yet, enter it
+    // If not in chat mode yet, enter it and create new conversation ID
     if (!isInChat) {
       setIsInChat(true);
+      setCurrentConversationId(Date.now().toString());
     }
 
     const newUserMessage: Message = {
@@ -119,11 +145,14 @@ export function MonetisationTab() {
         {/* Show conversation cards when not in chat */}
         {!isInChat && messages.length === 0 ? (
           <div className="flex-1 flex flex-col">
-            {/* Placeholder */}
-            <div className="text-center py-8">
-              <h1 className="text-lg text-muted-foreground font-medium mb-6">
-                Ask me about growth strategies, content ideas, or monetisation tips...
+            {/* Big centered title */}
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                Your Monetisation Assistant
               </h1>
+              <p className="text-muted-foreground">
+                Ask me about growth strategies, content ideas, or monetisation tips...
+              </p>
             </div>
 
             {/* Previous conversations grid */}
@@ -131,7 +160,7 @@ export function MonetisationTab() {
               <div className="mt-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">Previous conversations</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {conversations.map((conv) => (
+                  {(showAllConversations ? conversations : conversations.slice(0, 5)).map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => handleSelectConversation(conv)}
@@ -153,6 +182,23 @@ export function MonetisationTab() {
                     </button>
                   ))}
                 </div>
+                {/* Show more button if more than 5 conversations */}
+                {conversations.length > 5 && !showAllConversations && (
+                  <button
+                    onClick={() => setShowAllConversations(true)}
+                    className="mt-4 w-full py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg border border-border hover:bg-muted/50"
+                  >
+                    Show all {conversations.length} conversations
+                  </button>
+                )}
+                {showAllConversations && conversations.length > 5 && (
+                  <button
+                    onClick={() => setShowAllConversations(false)}
+                    className="mt-4 w-full py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg border border-border hover:bg-muted/50"
+                  >
+                    Show less
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -217,9 +263,9 @@ export function MonetisationTab() {
           </div>
         )}
 
-        {/* Input */}
+        {/* Input - more rounded */}
         <div className="p-3">
-          <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-2xl px-4 py-3">
             <input
               type="text"
               value={inputValue}
@@ -231,7 +277,7 @@ export function MonetisationTab() {
             <button
               onClick={toggleRecording}
               className={cn(
-                "p-2 rounded-lg transition-all duration-200",
+                "p-2 rounded-xl transition-all duration-200",
                 isRecording
                   ? "bg-destructive text-white recording-pulse"
                   : "hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -243,7 +289,7 @@ export function MonetisationTab() {
               onClick={handleSendMessage}
               disabled={!inputValue.trim()}
               className={cn(
-                "p-2 rounded-lg transition-all duration-200",
+                "p-2 rounded-xl transition-all duration-200",
                 inputValue.trim()
                   ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white hover:opacity-90"
                   : "bg-muted text-muted-foreground cursor-not-allowed"
