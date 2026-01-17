@@ -1,11 +1,7 @@
-import { useState } from "react";
 import { topPosts } from "@/lib/mockData";
-import { DateFilter } from "./DateFilter";
 import { UnifiedAnalyticsCard } from "./UnifiedAnalyticsCard";
 
 export function ReportingTab() {
-  const [dateRange, setDateRange] = useState("30");
-
   return (
     <div className="space-y-6 slide-up">
       {/* Header with friendly title */}
@@ -16,7 +12,6 @@ export function ReportingTab() {
           </h2>
           <p className="text-muted-foreground">Your Instagram insights, simplified</p>
         </div>
-        <DateFilter value={dateRange} onChange={setDateRange} />
       </div>
 
       {/* Unified Analytics Card - Datafast-inspired */}

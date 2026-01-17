@@ -5,6 +5,7 @@ import { GlobeMap } from "./GlobeMap";
 import { MetricWidget, type MetricType } from "./MetricWidget";
 import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
+import { DateFilter } from "./DateFilter";
 
 // Extended mock data for unified chart
 const unifiedChartData = [
@@ -20,6 +21,7 @@ const unifiedChartData = [
 export function UnifiedAnalyticsCard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "map">("analytics");
   const [activeMetric, setActiveMetric] = useState<MetricType>("all");
+  const [dateRange, setDateRange] = useState("30");
 
   const totals = useMemo(() => {
     const lastData = unifiedChartData[unifiedChartData.length - 1];
@@ -102,6 +104,7 @@ export function UnifiedAnalyticsCard() {
                   Show all
                 </button>
               )}
+              <DateFilter value={dateRange} onChange={setDateRange} />
             </div>
             <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg">
               <button
