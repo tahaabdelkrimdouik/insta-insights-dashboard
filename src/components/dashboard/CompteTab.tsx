@@ -17,9 +17,9 @@ export function CompteTab() {
     displayName: profile?.name ?? profile?.username ?? mockProfileData.displayName,
     bio: profile?.biography ?? mockProfileData.bio,
     profilePicture: profile?.profilePicture ?? mockProfileData.profilePicture,
-    followers: profile?.stats?.followers ?? mockProfileData.followers,
-    following: profile?.stats?.following ?? mockProfileData.following,
-    posts: profile?.stats?.posts ?? mockProfileData.posts,
+    followers: profile?.followers ?? mockProfileData.followers,
+    following: profile?.following ?? mockProfileData.following,
+    posts: profile?.posts ?? mockProfileData.posts,
     verifiedBadge: mockProfileData.verifiedBadge,
   };
 
