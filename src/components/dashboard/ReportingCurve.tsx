@@ -175,25 +175,6 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
               animationEasing="ease-out"
             />
           )}
-          {showComments && (
-            <Area
-              yAxisId="engagement"
-              type="monotone"
-              dataKey="comments"
-              stroke={COLORS.comments}
-              strokeWidth={2.5}
-              fill="url(#colorComments)"
-              dot={false}
-              activeDot={{ 
-                r: 6, 
-                fill: COLORS.comments, 
-                strokeWidth: 2, 
-                stroke: "hsl(var(--background))" 
-              }}
-              animationDuration={500}
-              animationEasing="ease-out"
-            />
-          )}
         </AreaChart>
       </ResponsiveContainer>
     </div>
