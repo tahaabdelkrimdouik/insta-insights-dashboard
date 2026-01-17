@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BarChart3, DollarSign, User, Menu, X, ChevronLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BarChart3, DollarSign, User, Menu, X, ChevronLeft, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -17,10 +17,28 @@ const menuItems = [
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   const handleTabChange = (tabId: string) => {
     onTabChange(tabId);
     setIsMobileOpen(false);
+  };
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
   };
 
   return (
@@ -30,18 +48,28 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="gradient-accent rounded-lg p-2">
-              <BarChart3 className="h-5 w-5 text-accent-foreground" />
+              <BarChart3 className="h-5 w-5 text-white" />
             </div>
             <span className="text-lg font-bold text-sidebar-foreground">InstaMetrics</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="text-sidebar-foreground hover:bg-sidebar-accent"
-          >
-            {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="text-sidebar-foreground hover:bg-sidebar-accent"
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className="text-sidebar-foreground hover:bg-sidebar-accent"
+            >
+              {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -68,7 +96,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             isCollapsed && "justify-center px-2"
           )}>
             <div className="gradient-accent rounded-lg p-2 shrink-0">
-              <BarChart3 className="h-6 w-6 text-accent-foreground" />
+              <BarChart3 className="h-6 w-6 text-white" />
             </div>
             {!isCollapsed && (
               <div className="fade-in">
@@ -91,12 +119,12 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                         isActive
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                          ? "bg-gradient-to-r from-metric-pink to-metric-orange text-white"
                           : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                         isCollapsed && "justify-center px-2"
                       )}
                     >
-                      <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-sidebar-primary-foreground")} />
+                      <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-white")} />
                       {!isCollapsed && <span>{item.label}</span>}
                     </button>
                   </li>
@@ -105,12 +133,29 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             </ul>
           </nav>
 
-          {/* Collapse Button (Desktop Only) */}
-          <div className="hidden lg:block px-3 py-4 border-t border-sidebar-border">
+          {/* Bottom actions */}
+          <div className="px-3 py-4 border-t border-sidebar-border space-y-2">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
+                isCollapsed && "justify-center px-2"
+              )}
+            >
+              {isDark ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+              {!isCollapsed && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
+            </button>
+
+            {/* Collapse Button (Desktop Only) */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
+                "hidden lg:flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors",
                 isCollapsed && "justify-center px-2"
               )}
             >

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -22,10 +21,11 @@ interface ReportingCurveProps {
   activeMetric: MetricType;
 }
 
-const COLORS = {
-  followers: "hsl(var(--accent))",
-  likes: "hsl(220, 80%, 60%)",
-  comments: "hsl(280, 70%, 60%)",
+// Pink/Orange theme colors
+export const COLORS = {
+  followers: "hsl(340, 82%, 65%)",
+  likes: "hsl(25, 95%, 60%)",
+  comments: "hsl(280, 60%, 70%)",
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -61,27 +61,27 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
   const useEngagementAxis = showLikes || showComments;
 
   return (
-    <div className="h-[340px] transition-all duration-500 ease-out">
+    <div className="h-[300px] transition-all duration-500 ease-out">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.followers} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={COLORS.followers} stopOpacity={0} />
+              <stop offset="5%" stopColor={COLORS.followers} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.followers} stopOpacity={0.05} />
             </linearGradient>
             <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.likes} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={COLORS.likes} stopOpacity={0} />
+              <stop offset="5%" stopColor={COLORS.likes} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.likes} stopOpacity={0.05} />
             </linearGradient>
             <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.comments} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={COLORS.comments} stopOpacity={0} />
+              <stop offset="5%" stopColor={COLORS.comments} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.comments} stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid 
             strokeDasharray="3 3" 
             stroke="hsl(var(--border))" 
-            opacity={0.5}
+            opacity={0.3}
             vertical={false}
           />
           <XAxis
@@ -180,5 +180,3 @@ export function ReportingCurve({ data, activeMetric }: ReportingCurveProps) {
     </div>
   );
 }
-
-export { COLORS };
