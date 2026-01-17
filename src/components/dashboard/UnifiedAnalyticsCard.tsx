@@ -1,17 +1,9 @@
 import { useState, useMemo } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { TrendingUp, TrendingDown, BarChart3, Globe } from "lucide-react";
+import { BarChart3, Globe, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlobeMap } from "./GlobeMap";
+import { MetricWidget, type MetricType } from "./MetricWidget";
+import { ReportingCurve, COLORS } from "./ReportingCurve";
 
 // Extended mock data for unified chart
 const unifiedChartData = [
@@ -24,85 +16,9 @@ const unifiedChartData = [
   { date: "Jan 30", followers: 45892, likes: 3820, comments: 312 },
 ];
 
-interface KPIBlockProps {
-  label: string;
-  value: string;
-  change: number;
-  color: string;
-  isActive?: boolean;
-  onClick?: () => void;
-}
-
-function KPIBlock({ label, value, change, color, isActive = true, onClick }: KPIBlockProps) {
-  const isPositive = change >= 0;
-  
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex flex-col items-start gap-1 px-4 py-3 rounded-lg transition-all duration-200",
-        "bg-card/40 backdrop-blur-sm border border-border/50 hover:bg-card/60",
-        isActive && "ring-2 ring-offset-2 ring-offset-background",
-        onClick && "cursor-pointer"
-      )}
-      style={{ 
-        borderLeftColor: color, 
-        borderLeftWidth: "3px",
-        ...(isActive && { ringColor: color })
-      }}
-    >
-      <div className="flex items-center gap-2">
-        <div 
-          className="w-2.5 h-2.5 rounded-full" 
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {label}
-        </span>
-      </div>
-      <span className="text-2xl font-bold text-foreground">{value}</span>
-      <div className="flex items-center gap-1">
-        {isPositive ? (
-          <TrendingUp className="w-3 h-3 text-success" />
-        ) : (
-          <TrendingDown className="w-3 h-3 text-destructive" />
-        )}
-        <span className={cn(
-          "text-xs font-medium",
-          isPositive ? "text-success" : "text-destructive"
-        )}>
-          {isPositive ? "+" : ""}{change.toFixed(1)}%
-        </span>
-      </div>
-    </button>
-  );
-}
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-card/95 backdrop-blur-md border border-border rounded-xl p-4 shadow-xl">
-        <p className="text-sm font-semibold text-foreground mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <div 
-              className="w-2 h-2 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-muted-foreground capitalize">{entry.dataKey}:</span>
-            <span className="font-medium text-foreground">
-              {entry.value.toLocaleString()}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 export function UnifiedAnalyticsCard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "map">("analytics");
+  const [activeMetric, setActiveMetric] = useState<MetricType>("all");
 
   const totals = useMemo(() => {
     const lastData = unifiedChartData[unifiedChartData.length - 1];
@@ -127,11 +43,30 @@ export function UnifiedAnalyticsCard() {
     return value.toString();
   };
 
+  const handleMetricClick = (metric: MetricType) => {
+    if (activeMetric === metric) {
+      setActiveMetric("all");
+    } else {
+      setActiveMetric(metric);
+    }
+  };
+
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
       {/* Header with internal tabs */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
-        <h2 className="text-lg font-semibold text-foreground">Performance Overview</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-foreground">Performance Overview</h2>
+          {activeMetric !== "all" && (
+            <button
+              onClick={() => setActiveMetric("all")}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-all duration-200"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Show all
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
           <button
             onClick={() => setActiveTab("analytics")}
@@ -163,131 +98,43 @@ export function UnifiedAnalyticsCard() {
       {/* Content area */}
       <div className="p-6">
         {activeTab === "analytics" ? (
-          <>
-            {/* KPI Blocks - Embedded inside chart container */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              <KPIBlock
+          <div className="space-y-6">
+            {/* Metric Widgets - Outside curve, horizontal alignment */}
+            <div className="flex flex-wrap gap-4">
+              <MetricWidget
+                type="followers"
                 label="Followers"
                 value={formatValue(totals.followers.value)}
                 change={totals.followers.change}
-                color="hsl(var(--accent))"
+                color={COLORS.followers}
+                isActive={activeMetric === "all" || activeMetric === "followers"}
+                onClick={() => handleMetricClick("followers")}
               />
-              <KPIBlock
-                label="Likes"
+              <MetricWidget
+                type="likes"
+                label="Total Likes"
                 value={formatValue(totals.likes.value)}
                 change={totals.likes.change}
-                color="hsl(220, 80%, 60%)"
+                color={COLORS.likes}
+                isActive={activeMetric === "all" || activeMetric === "likes"}
+                onClick={() => handleMetricClick("likes")}
               />
-              <KPIBlock
-                label="Comments"
+              <MetricWidget
+                type="comments"
+                label="Total Comments"
                 value={formatValue(totals.comments.value)}
                 change={totals.comments.change}
-                color="hsl(280, 70%, 60%)"
+                color={COLORS.comments}
+                isActive={activeMetric === "all" || activeMetric === "comments"}
+                onClick={() => handleMetricClick("comments")}
               />
-              <div className="flex flex-col items-start gap-1 px-4 py-3 rounded-lg bg-card/40 backdrop-blur-sm border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Growth Rate
-                </span>
-                <span className="text-2xl font-bold text-foreground">
-                  +{totals.followers.change.toFixed(1)}%
-                </span>
-                <span className="text-xs text-muted-foreground">This period</span>
-              </div>
             </div>
 
-            {/* Unified Chart */}
-            <div className="h-[340px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={unifiedChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(220, 80%, 60%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(220, 80%, 60%)" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(280, 70%, 60%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(280, 70%, 60%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    stroke="hsl(var(--border))" 
-                    opacity={0.5}
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    dy={10}
-                  />
-                  <YAxis
-                    yAxisId="followers"
-                    orientation="left"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                    dx={-10}
-                  />
-                  <YAxis
-                    yAxisId="engagement"
-                    orientation="right"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => value.toLocaleString()}
-                    dx={10}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend 
-                    wrapperStyle={{ paddingTop: "20px" }}
-                    formatter={(value) => (
-                      <span className="text-xs text-muted-foreground capitalize">{value}</span>
-                    )}
-                  />
-                  <Area
-                    yAxisId="followers"
-                    type="monotone"
-                    dataKey="followers"
-                    stroke="hsl(var(--accent))"
-                    strokeWidth={2.5}
-                    fill="url(#colorFollowers)"
-                    dot={false}
-                    activeDot={{ r: 5, fill: "hsl(var(--accent))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  />
-                  <Area
-                    yAxisId="engagement"
-                    type="monotone"
-                    dataKey="likes"
-                    stroke="hsl(220, 80%, 60%)"
-                    strokeWidth={2.5}
-                    fill="url(#colorLikes)"
-                    dot={false}
-                    activeDot={{ r: 5, fill: "hsl(220, 80%, 60%)", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  />
-                  <Area
-                    yAxisId="engagement"
-                    type="monotone"
-                    dataKey="comments"
-                    stroke="hsl(280, 70%, 60%)"
-                    strokeWidth={2.5}
-                    fill="url(#colorComments)"
-                    dot={false}
-                    activeDot={{ r: 5, fill: "hsl(280, 70%, 60%)", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            {/* Curve Chart */}
+            <div className="bg-muted/20 rounded-xl p-4 border border-border/30">
+              <ReportingCurve data={unifiedChartData} activeMetric={activeMetric} />
             </div>
-          </>
+          </div>
         ) : (
           <GlobeMap />
         )}
