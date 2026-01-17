@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { MapPin, Users } from "lucide-react";
+import Globe from "react-globe.gl";
 
 // Mock geographic data for audience distribution
 const mockGeoData = [
@@ -16,124 +17,101 @@ const mockGeoData = [
 ];
 
 export function GlobeMap() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 340 });
 
+  // Points data for the globe
+  const pointsData = useMemo(() => 
+    mockGeoData.map(d => ({
+      ...d,
+      size: Math.sqrt(d.percentage) * 0.4,
+      color: `hsl(340, 82%, ${50 + d.percentage}%)`,
+    })), 
+  []);
+
+  // Handle container resize
   useEffect(() => {
-    let globe: any = null;
-    
-    const initGlobe = async () => {
-      if (!containerRef.current) return;
-      
-      try {
-        const Globe = (await import("react-globe.gl")).default;
-        
-        // Create a wrapper for the globe
-        const container = containerRef.current;
-        const width = container.clientWidth;
-        const height = 340;
-        
-        // Dynamic import and render
-        setIsLoaded(true);
-      } catch (err) {
-        console.error("Failed to load globe:", err);
-        setError("Failed to load 3D globe");
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: 340
+        });
       }
     };
-    
-    initGlobe();
-    
-    return () => {
-      if (globe) {
-        // Cleanup if needed
-      }
-    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
+
+  // Configure globe after mount
+  useEffect(() => {
+    if (globeRef.current) {
+      // Set initial camera position
+      globeRef.current.pointOfView({ lat: 30, lng: 0, altitude: 2.2 });
+      
+      // Enable auto-rotation
+      const controls = globeRef.current.controls();
+      if (controls) {
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        controls.enableZoom = true;
+        controls.minDistance = 150;
+        controls.maxDistance = 500;
+      }
+    }
+  }, [dimensions.width]);
 
   return (
     <div className="space-y-4">
-      {/* Globe placeholder with gradient background */}
+      {/* Globe container */}
       <div 
         ref={containerRef}
-        className="relative h-[340px] rounded-xl overflow-hidden bg-gradient-to-b from-primary/20 via-primary/10 to-background"
+        className="relative h-[340px] rounded-xl overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background"
       >
-        {/* Decorative globe visualization */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            {/* Globe circle */}
-            <div className="w-64 h-64 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/40 border border-accent/30 shadow-2xl shadow-accent/20 animate-pulse">
-              {/* Grid lines */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                {/* Horizontal lines */}
-                {[20, 35, 50, 65, 80].map((y) => (
-                  <ellipse
-                    key={`h-${y}`}
-                    cx="50"
-                    cy="50"
-                    rx={Math.sin((y / 100) * Math.PI) * 48}
-                    ry={(y - 50) * 0.96}
-                    fill="none"
-                    stroke="hsl(var(--accent))"
-                    strokeWidth="0.3"
-                    opacity="0.4"
-                    transform={`rotate(-15 50 50)`}
-                  />
-                ))}
-                {/* Vertical lines */}
-                {[0, 30, 60, 90, 120, 150].map((angle) => (
-                  <ellipse
-                    key={`v-${angle}`}
-                    cx="50"
-                    cy="50"
-                    rx="2"
-                    ry="48"
-                    fill="none"
-                    stroke="hsl(var(--accent))"
-                    strokeWidth="0.3"
-                    opacity="0.4"
-                    transform={`rotate(${angle - 15} 50 50)`}
-                  />
-                ))}
-              </svg>
-              
-              {/* Animated data points */}
-              {mockGeoData.slice(0, 6).map((point, index) => {
-                const angle = (index / 6) * 360;
-                const radius = 80 + (index % 3) * 15;
-                const x = 128 + Math.cos((angle * Math.PI) / 180) * radius;
-                const y = 128 + Math.sin((angle * Math.PI) / 180) * radius;
-                
-                return (
-                  <div
-                    key={point.city}
-                    className="absolute w-3 h-3 rounded-full bg-accent animate-ping"
-                    style={{
-                      left: `${x}px`,
-                      top: `${y}px`,
-                      animationDelay: `${index * 0.3}s`,
-                      animationDuration: "2s",
-                    }}
-                  >
-                    <div className="absolute inset-0 rounded-full bg-accent" />
-                  </div>
+        {dimensions.width > 0 && (
+          <Globe
+            ref={globeRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            backgroundColor="rgba(0,0,0,0)"
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+            atmosphereColor="hsl(340, 82%, 52%)"
+            atmosphereAltitude={0.15}
+            pointsData={pointsData}
+            pointLat="lat"
+            pointLng="lng"
+            pointAltitude={0.01}
+            pointRadius="size"
+            pointColor="color"
+            pointLabel={(d: any) => `
+              <div style="background: hsl(222, 47%, 11%); padding: 8px 12px; border-radius: 8px; border: 1px solid hsl(340, 82%, 52%); font-family: system-ui;">
+                <div style="font-weight: 600; color: white;">${d.city}, ${d.country}</div>
+                <div style="color: hsl(340, 82%, 65%); font-size: 12px; margin-top: 4px;">
+                  ${(d.followers / 1000).toFixed(1)}K followers (${d.percentage}%)
+                </div>
+              </div>
+            `}
+            onPointClick={(point: any) => {
+              if (globeRef.current) {
+                globeRef.current.pointOfView(
+                  { lat: point.lat, lng: point.lng, altitude: 1.5 },
+                  1000
                 );
-              })}
-            </div>
-            
-            {/* Glow effect */}
-            <div className="absolute inset-0 w-64 h-64 rounded-full bg-accent/10 blur-xl -z-10" />
-          </div>
-        </div>
+              }
+            }}
+          />
+        )}
         
         {/* Overlay label */}
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="w-4 h-4 text-accent" />
             <span>Audience Distribution</span>
           </div>
-          <span className="text-xs text-muted-foreground/70">Globe.gl Ready</span>
+          <span className="text-xs text-muted-foreground/70">Interactive Globe</span>
         </div>
       </div>
 
@@ -142,7 +120,15 @@ export function GlobeMap() {
         {mockGeoData.slice(0, 5).map((location) => (
           <div
             key={location.city}
-            className="p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors"
+            className="p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => {
+              if (globeRef.current) {
+                globeRef.current.pointOfView(
+                  { lat: location.lat, lng: location.lng, altitude: 1.5 },
+                  1000
+                );
+              }
+            }}
           >
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-accent" />
