@@ -86,14 +86,14 @@ export function ReportingChatbot() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-metric-pink to-metric-orange flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
+      <div className="px-4 py-4 border-b border-border/50 bg-gradient-to-r from-metric-pink/5 to-metric-orange/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-metric-pink to-metric-orange flex items-center justify-center shadow-lg shadow-metric-pink/20">
+            <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Analytics Assistant</h3>
-            <p className="text-xs text-muted-foreground">Ask about your reports</p>
+            <h3 className="text-sm font-semibold text-foreground">Ask about Reporting</h3>
+            <p className="text-xs text-muted-foreground">Get insights from your analytics</p>
           </div>
         </div>
       </div>

@@ -8,11 +8,13 @@ export function ReportingTab() {
 
   return (
     <div className="space-y-6 slide-up">
-      {/* Header with filter */}
+      {/* Header with friendly title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Analytics Overview</h2>
-          <p className="text-muted-foreground">Track your Instagram performance</p>
+          <h2 className="text-2xl font-bold text-foreground">
+            Hey there! Let's explore your growth 👋
+          </h2>
+          <p className="text-muted-foreground">Your Instagram insights, simplified</p>
         </div>
         <DateFilter value={dateRange} onChange={setDateRange} />
       </div>
