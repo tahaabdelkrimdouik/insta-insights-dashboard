@@ -36,4 +36,6 @@ export const API_ENDPOINTS = {
     predictions: '/stats/predictions',
     accountValue: '/stats/account-value',
   },
+  // Chat
+  chat: '/api/chat',
 } as const;

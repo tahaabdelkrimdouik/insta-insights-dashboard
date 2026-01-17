@@ -1,7 +1,9 @@
-import { useState, useCallback } from "react";
-import { Send, Mic, MicOff } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Send, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { chatService } from "@/lib/api/services";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -10,26 +12,25 @@ interface Message {
   timestamp: string;
 }
 
-const mockResponses = [
-  "Based on your analytics, your follower growth rate increased by 12% this month. Your best performing day was Wednesday with 2,450 new followers.",
-  "Your engagement rate is currently at 4.8%, which is above the industry average. Keep posting during peak hours (6-8 PM) for maximum impact.",
-  "Looking at your comments trend, tutorial-style posts receive 40% more comments than other content types.",
-  "Your likes have been steadily increasing. Consider adding more carousel posts as they generate 25% more likes on average.",
-];
-
 export function ReportingChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(prev => prev + (prev ? " " : "") + transcript);
   }, []);
 
-  const { isRecording, toggleRecording, isSupported, transcript } = useSpeechRecognition({
+  const { isRecording, toggleRecording, isSupported } = useSpeechRecognition({
     onResult: handleVoiceResult,
-    language: "en-US",
+    language: "fr-FR", // French for the API
   });
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -42,20 +43,38 @@ export function ReportingChatbot() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userQuestion = input;
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
+    try {
+      const response = await chatService.sendMessage({
+        question: userQuestion,
+        mode: 'content_analyst',
+        max_tokens: 1000,
+        temperature: 0.5,
+        n_posts: 3,
+      });
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: mockResponses[Math.floor(Math.random() * mockResponses.length)],
+        content: response.response,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Chat API error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I couldn't process your request. Please try again.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -86,16 +105,22 @@ export function ReportingChatbot() {
           >
             <div
               className={cn(
-                "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm",
+                "max-w-[90%] rounded-2xl px-4 py-3 text-sm",
                 message.role === "user"
                   ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white rounded-br-md"
                   : "bg-muted text-foreground rounded-bl-md"
               )}
             >
-              <p className="leading-relaxed">{message.content}</p>
+              {message.role === "assistant" ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-medium [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:my-1.5 [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:my-0.5 [&_strong]:font-semibold">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="leading-relaxed">{message.content}</p>
+              )}
               <p
                 className={cn(
-                  "text-[10px] mt-1.5",
+                  "text-[10px] mt-2",
                   message.role === "user" ? "text-white/70" : "text-muted-foreground"
                 )}
               >
@@ -106,16 +131,13 @@ export function ReportingChatbot() {
         ))}
         {isTyping && (
           <div className="flex animate-fade-in justify-start">
-            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-              </div>
+            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Analyzing your data...</span>
             </div>
           </div>
         )}
-        
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
@@ -128,29 +150,38 @@ export function ReportingChatbot() {
             onKeyPress={handleKeyPress}
             placeholder="Ask about your analytics..."
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            disabled={isTyping}
           />
-          <button
-            onClick={toggleRecording}
-            className={cn(
-              "p-2 rounded-lg transition-all duration-200",
-              isRecording
-                ? "bg-destructive text-white recording-pulse"
-                : "hover:bg-muted text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-          </button>
+          {isSupported && (
+            <button
+              onClick={toggleRecording}
+              disabled={isTyping}
+              className={cn(
+                "p-2 rounded-lg transition-all duration-200",
+                isRecording
+                  ? "bg-destructive text-white recording-pulse"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground",
+                isTyping && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+          )}
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isTyping}
             className={cn(
               "p-2 rounded-lg transition-all duration-200",
-              input.trim()
+              input.trim() && !isTyping
                 ? "bg-gradient-to-br from-metric-pink to-metric-orange text-white hover:opacity-90"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             )}
           >
-            <Send className="w-4 h-4" />
+            {isTyping ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>
