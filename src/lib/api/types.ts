@@ -9,7 +9,7 @@ export interface ApiError {
   message: string;
 }
 
-// Profile types
+// Profile types (for /stats/dashboard)
 export interface ProfileData {
   id: string;
   username: string;
@@ -24,11 +24,21 @@ export interface ProfileData {
   };
 }
 
-export interface ProfileWithEngagement extends ProfileData {
-  engagementRate: string;
-  totalLikes: number;
-  totalComments: number;
-  avgPerPost: number;
+// Profile with engagement (for /stats/profile - flat structure)
+export interface ProfileWithEngagement {
+  id: string;
+  username: string;
+  name: string;
+  biography?: string;
+  profilePicture?: string;
+  website?: string;
+  accountType: string;
+  followers: number;
+  following: number;
+  posts: number;
+  engagementRate: number;
+  avgEngagementPerPost: number;
+  postsAnalyzed: number;
 }
 
 // Media/Post types
