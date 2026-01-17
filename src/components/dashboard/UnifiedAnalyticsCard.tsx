@@ -1,28 +1,27 @@
 import { useState, useMemo } from "react";
-import { BarChart3, Globe, RotateCcw, MessageCircle, X, RefreshCw } from "lucide-react";
+import { BarChart3, Globe, MessageCircle, X, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlobeMap } from "./GlobeMap";
-import { MetricWidget, type MetricType } from "./MetricWidget";
+import { MetricWidget } from "./MetricWidget";
 import { ReportingCurve, COLORS } from "./ReportingCurve";
 import { ReportingChatbot } from "./ReportingChatbot";
 import { DateFilter } from "./DateFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowersGrowth, useDashboard } from "@/hooks/useInstagramApi";
 
-// Fallback mock data
+// Fallback mock data for chart (followers only)
 const mockChartData = [
-  { date: "Jan 1", followers: 42000, reach: 28000, dailyGain: 45 },
-  { date: "Jan 5", followers: 42450, reach: 32000, dailyGain: 90 },
-  { date: "Jan 10", followers: 43100, reach: 45000, dailyGain: 130 },
-  { date: "Jan 15", followers: 43800, reach: 38000, dailyGain: 140 },
-  { date: "Jan 20", followers: 44200, reach: 42000, dailyGain: 80 },
-  { date: "Jan 25", followers: 44890, reach: 55000, dailyGain: 138 },
-  { date: "Jan 30", followers: 45892, reach: 48000, dailyGain: 200 },
+  { date: "Jan 1", followers: 42000 },
+  { date: "Jan 5", followers: 42450 },
+  { date: "Jan 10", followers: 43100 },
+  { date: "Jan 15", followers: 43800 },
+  { date: "Jan 20", followers: 44200 },
+  { date: "Jan 25", followers: 44890 },
+  { date: "Jan 30", followers: 45892 },
 ];
 
 export function UnifiedAnalyticsCard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "map">("analytics");
-  const [activeMetric, setActiveMetric] = useState<MetricType>("all");
   const [dateRange, setDateRange] = useState("30");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -32,58 +31,45 @@ export function UnifiedAnalyticsCard() {
   const isLoading = followersLoading || dashboardLoading;
   const hasError = followersError || dashboardError;
 
-  // Transform followers data for chart
-  const unifiedChartData = useMemo(() => {
+  // Transform followers data for chart (only followers)
+  const chartData = useMemo(() => {
     if (followersData && followersData.length > 0) {
       return followersData.map(point => ({
         date: point.date,
         followers: point.total_followers,
-        reach: point.reach,
-        dailyGain: point.followers_gained,
       }));
     }
     
     return mockChartData;
   }, [followersData]);
 
+  // Stats from dashboard API (likes, comments) and followers data
   const totals = useMemo(() => {
-    const lastData = unifiedChartData[unifiedChartData.length - 1];
-    const firstData = unifiedChartData[0];
+    const lastFollowers = followersData?.[followersData.length - 1]?.total_followers || 
+                         dashboard?.profile?.stats?.followers || 
+                         chartData[chartData.length - 1].followers;
     
-    const totalReach = unifiedChartData.reduce((sum, d) => sum + d.reach, 0);
-    const totalDailyGain = unifiedChartData.reduce((sum, d) => sum + d.dailyGain, 0);
-    
-    const followersChange = firstData.followers > 0 
-      ? ((lastData.followers - firstData.followers) / firstData.followers) * 100 
+    const firstFollowers = followersData?.[0]?.total_followers || lastFollowers;
+    const followersChange = firstFollowers > 0 
+      ? ((lastFollowers - firstFollowers) / firstFollowers) * 100 
       : 0;
     
-    // Calculate average daily reach change
-    const avgReach = totalReach / unifiedChartData.length;
-    const firstHalfAvgReach = unifiedChartData.slice(0, Math.floor(unifiedChartData.length / 2)).reduce((sum, d) => sum + d.reach, 0) / Math.floor(unifiedChartData.length / 2);
-    const reachChange = firstHalfAvgReach > 0 ? ((avgReach - firstHalfAvgReach) / firstHalfAvgReach) * 100 : 0;
-    
-    const avgDailyGain = totalDailyGain / unifiedChartData.length;
-    const firstHalfAvgGain = unifiedChartData.slice(0, Math.floor(unifiedChartData.length / 2)).reduce((sum, d) => sum + d.dailyGain, 0) / Math.floor(unifiedChartData.length / 2);
-    const gainChange = firstHalfAvgGain > 0 ? ((avgDailyGain - firstHalfAvgGain) / firstHalfAvgGain) * 100 : 0;
-    
     return {
-      followers: { value: lastData.followers, change: followersChange },
-      reach: { value: totalReach, change: reachChange },
-      dailyGain: { value: totalDailyGain, change: gainChange },
+      followers: { value: lastFollowers, change: followersChange },
+      likes: { 
+        value: dashboard?.engagement?.totalLikes || 0, 
+        change: 18.2 
+      },
+      comments: { 
+        value: dashboard?.engagement?.totalComments || 0, 
+        change: 24.5 
+      },
     };
-  }, [unifiedChartData]);
+  }, [dashboard, chartData, followersData]);
 
   const formatValue = (value: number) => {
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
     return value.toString();
-  };
-
-  const handleMetricClick = (metric: MetricType) => {
-    if (activeMetric === metric) {
-      setActiveMetric("all");
-    } else {
-      setActiveMetric(metric);
-    }
   };
 
   const handleRefresh = () => {
@@ -125,7 +111,7 @@ export function UnifiedAnalyticsCard() {
           </div>
         )}
 
-        {/* Metric Widgets - Completely outside curve */}
+        {/* Metric Widgets - Stats display only */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricWidget
             type="followers"
@@ -133,26 +119,26 @@ export function UnifiedAnalyticsCard() {
             value={formatValue(totals.followers.value)}
             change={totals.followers.change}
             color={COLORS.followers}
-            isActive={activeMetric === "all" || activeMetric === "followers"}
-            onClick={() => handleMetricClick("followers")}
+            isActive={true}
+            onClick={() => {}}
           />
           <MetricWidget
-            type="reach"
-            label="Total Reach"
-            value={formatValue(totals.reach.value)}
-            change={totals.reach.change}
-            color={COLORS.reach}
-            isActive={activeMetric === "all" || activeMetric === "reach"}
-            onClick={() => handleMetricClick("reach")}
+            type="likes"
+            label="Total Likes"
+            value={formatValue(totals.likes.value)}
+            change={totals.likes.change}
+            color={COLORS.likes}
+            isActive={true}
+            onClick={() => {}}
           />
           <MetricWidget
-            type="dailyGain"
-            label="Followers Gained"
-            value={formatValue(totals.dailyGain.value)}
-            change={totals.dailyGain.change}
-            color={COLORS.dailyGain}
-            isActive={activeMetric === "all" || activeMetric === "dailyGain"}
-            onClick={() => handleMetricClick("dailyGain")}
+            type="comments"
+            label="Comments"
+            value={formatValue(totals.comments.value)}
+            change={totals.comments.change}
+            color={COLORS.comments}
+            isActive={true}
+            onClick={() => {}}
           />
         </div>
 
@@ -161,16 +147,7 @@ export function UnifiedAnalyticsCard() {
           {/* Header with internal tabs */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 border-b border-border/50 relative z-20 gap-3">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h2 className="text-sm font-semibold text-foreground">Performance Trends</h2>
-              {activeMetric !== "all" && (
-                <button
-                  onClick={() => setActiveMetric("all")}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-all duration-200"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Show all
-                </button>
-              )}
+              <h2 className="text-sm font-semibold text-foreground">Followers Growth</h2>
               <DateFilter value={dateRange} onChange={setDateRange} />
             </div>
             <div className="flex items-center gap-1 p-0.5 bg-muted/50 rounded-lg self-start sm:self-auto">
@@ -204,7 +181,7 @@ export function UnifiedAnalyticsCard() {
           {/* Content area */}
           <div className="p-4 sm:p-5">
             {activeTab === "analytics" ? (
-              <ReportingCurve data={unifiedChartData} activeMetric={activeMetric} />
+              <ReportingCurve data={chartData} />
             ) : (
               <GlobeMap />
             )}
