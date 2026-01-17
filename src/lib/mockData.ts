@@ -63,6 +63,7 @@ export const topPosts = [
   {
     id: 1,
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop",
+    permalink: "https://www.instagram.com/p/example1/",
     likes: 4521,
     comments: 234,
     reach: 32400,
@@ -71,6 +72,7 @@ export const topPosts = [
   {
     id: 2,
     image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=300&fit=crop",
+    permalink: "https://www.instagram.com/p/example2/",
     likes: 3892,
     comments: 187,
     reach: 28900,
@@ -79,6 +81,7 @@ export const topPosts = [
   {
     id: 3,
     image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=300&h=300&fit=crop",
+    permalink: "https://www.instagram.com/p/example3/",
     likes: 3456,
     comments: 156,
     reach: 25600,
@@ -87,6 +90,7 @@ export const topPosts = [
   {
     id: 4,
     image: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=300&h=300&fit=crop",
+    permalink: "https://www.instagram.com/p/example4/",
     likes: 3201,
     comments: 142,
     reach: 24100,
