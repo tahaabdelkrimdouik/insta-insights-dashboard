@@ -3,17 +3,18 @@ import { MapPin, Users } from "lucide-react";
 import Globe from "react-globe.gl";
 
 // Mock geographic data for audience distribution
+// Mock geographic data - ~15K followers, majority in France
 const mockGeoData = [
-  { lat: 48.8566, lng: 2.3522, city: "Paris", country: "France", followers: 12450, percentage: 27 },
-  { lat: 40.7128, lng: -74.006, city: "New York", country: "USA", followers: 8920, percentage: 19 },
-  { lat: 51.5074, lng: -0.1278, city: "London", country: "UK", followers: 6830, percentage: 15 },
-  { lat: 35.6762, lng: 139.6503, city: "Tokyo", country: "Japan", followers: 4560, percentage: 10 },
-  { lat: -33.8688, lng: 151.2093, city: "Sydney", country: "Australia", followers: 3420, percentage: 7 },
-  { lat: 52.52, lng: 13.405, city: "Berlin", country: "Germany", followers: 2890, percentage: 6 },
-  { lat: 55.7558, lng: 37.6173, city: "Moscow", country: "Russia", followers: 2340, percentage: 5 },
-  { lat: 19.4326, lng: -99.1332, city: "Mexico City", country: "Mexico", followers: 1980, percentage: 4 },
-  { lat: -23.5505, lng: -46.6333, city: "São Paulo", country: "Brazil", followers: 1650, percentage: 4 },
-  { lat: 1.3521, lng: 103.8198, city: "Singapore", country: "Singapore", followers: 852, percentage: 2 },
+  { lat: 48.8566, lng: 2.3522, city: "Paris", country: "France", followers: 5200, percentage: 35 },
+  { lat: 45.764, lng: 4.8357, city: "Lyon", country: "France", followers: 2850, percentage: 19 },
+  { lat: 43.2965, lng: 5.3698, city: "Marseille", country: "France", followers: 1950, percentage: 13 },
+  { lat: 43.6047, lng: 1.4442, city: "Toulouse", country: "France", followers: 1200, percentage: 8 },
+  { lat: 47.2184, lng: -1.5536, city: "Nantes", country: "France", followers: 980, percentage: 7 },
+  { lat: 50.6292, lng: 3.0573, city: "Lille", country: "France", followers: 750, percentage: 5 },
+  { lat: 51.5074, lng: -0.1278, city: "London", country: "UK", followers: 680, percentage: 5 },
+  { lat: 46.2044, lng: 6.1432, city: "Geneva", country: "Switzerland", followers: 520, percentage: 3 },
+  { lat: 50.8503, lng: 4.3517, city: "Brussels", country: "Belgium", followers: 450, percentage: 3 },
+  { lat: 52.52, lng: 13.405, city: "Berlin", country: "Germany", followers: 320, percentage: 2 },
 ];
 
 export function GlobeMap() {
