@@ -19,7 +19,7 @@ const mockGeoData = [
 export function GlobeMap() {
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 340 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 280 });
 
   // Points data for the globe
   const pointsData = useMemo(() => 
@@ -34,9 +34,10 @@ export function GlobeMap() {
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
+        const isMobile = window.innerWidth < 640;
         setDimensions({
           width: containerRef.current.clientWidth,
-          height: 340
+          height: isMobile ? 280 : 340
         });
       }
     };
@@ -65,11 +66,11 @@ export function GlobeMap() {
   }, [dimensions.width]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Globe container */}
       <div 
         ref={containerRef}
-        className="relative h-[340px] rounded-xl overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background"
+        className="relative h-[280px] sm:h-[340px] rounded-xl overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background"
       >
         {dimensions.width > 0 && (
           <Globe
@@ -116,11 +117,11 @@ export function GlobeMap() {
       </div>
 
       {/* Location stats grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
         {mockGeoData.slice(0, 5).map((location) => (
           <div
             key={location.city}
-            className="p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
+            className="p-2 sm:p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
             onClick={() => {
               if (globeRef.current) {
                 globeRef.current.pointOfView(
@@ -130,18 +131,18 @@ export function GlobeMap() {
               }
             }}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-accent" />
-              <span className="text-xs font-medium text-foreground truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent" />
+              <span className="text-[10px] sm:text-xs font-medium text-foreground truncate">
                 {location.city}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Users className="w-3 h-3" />
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+                <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 <span>{(location.followers / 1000).toFixed(1)}K</span>
               </div>
-              <span className="text-xs font-semibold text-accent">
+              <span className="text-[10px] sm:text-xs font-semibold text-accent">
                 {location.percentage}%
               </span>
             </div>
