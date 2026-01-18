@@ -6,8 +6,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Gemini API Configuration
-const GEMINI_API_KEY = "AIzaSyDNvlWMdb1O0LZJ9VooUmAk1aBKkamoBbs";
-// "AIzaSyDdzCLKIIRvMDSEpVOPhxBwVgMvGzZhtnU";
+const GEMINI_API_KEY = "k";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 // Stats endpoints
