@@ -5,10 +5,10 @@ import { useAccountValue } from "@/hooks/useInstagramApi";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = process.env.NEXT_PUBLIC_GEMINI_API_URL;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_URL = import.meta.env.VITE_GEMINI_API_URL;
 
-const STATS_BASE_URL = process.env.NEXT_PUBLIC_STATS_BASE_URL;
+const STATS_BASE_URL = import.meta.env.VITE_STATS_BASE_URL;
 
 interface Message {
   id: string;
