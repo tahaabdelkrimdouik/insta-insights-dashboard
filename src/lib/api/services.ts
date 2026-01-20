@@ -118,9 +118,11 @@ export const insightsService = {
 };
 
 // ============ Chat Services ============
+export type ChatMode = 'content_analyst' | 'monetization' | 'strategy' | 'audience';
+
 export interface ChatRequest {
   question: string;
-  mode?: 'content_analyst' | 'growth_strategist' | 'engagement_expert';
+  mode?: ChatMode;
   max_tokens?: number;
   temperature?: number;
   n_posts?: number;
@@ -132,6 +134,25 @@ export interface ChatResponse {
   mode_description: string;
   question: string;
   relevant_posts_count: number;
+}
+
+export interface StatsResponse {
+  username: string;
+  followers: number;
+  avg_engagement_rate: number;
+  niche: string;
+  total_posts_indexed: number;
+}
+
+export interface ModeInfo {
+  mode: string;
+  description: string;
+}
+
+export interface HealthResponse {
+  status: 'healthy' | 'degraded';
+  agent_initialized: boolean;
+  message: string;
 }
 
 // Mock responses for demo/fallback
@@ -196,24 +217,94 @@ Your **chess-related Reels** are generating exceptional engagement! The humorous
 ❌ Overly promotional content
 ❌ Long-form vlogs
 ❌ Sponsored posts without entertainment value`,
+
+  monetization: `## 💰 Monetization Strategies
+
+### Your Current Value
+Based on your profile with ~15K followers and high engagement:
+- **Estimated post value**: €150-300 per sponsored post
+- **Reel value**: €200-400 per sponsored Reel
+- **Monthly potential**: €800-1,500
+
+### Recommendations
+1. **Brand Collaborations**: Chess apps, learning platforms, lifestyle brands
+2. **Affiliate Marketing**: Chess equipment, courses, apps
+3. **Digital Products**: Create your own chess tutorials or ebooks
+
+### Next Steps
+- Build a media kit highlighting your engagement rates
+- Reach out to 5 chess-related brands this week
+- Set up Instagram Shopping for merchandise`,
+
+  strategy: `## 🎯 Growth Strategy
+
+### Current Status
+You're in a strong position with excellent engagement rates on chess content.
+
+### 30-Day Action Plan
+**Week 1-2**: Content Foundation
+- Post 3 Reels per week (chess humor format)
+- Respond to all comments within 1 hour
+- Use 5-7 targeted hashtags
+
+**Week 3-4**: Expansion
+- Collaborate with 2 chess creators
+- Go live once per week
+- Test carousel posts for educational content
+
+### Growth Targets
+- **Followers**: +500-800 in 30 days
+- **Engagement**: Maintain 180%+ rate
+- **Reach**: Increase by 40%`,
 };
 
-const getMockResponse = (question: string): string => {
+const getMockResponse = (question: string, mode: ChatMode): string => {
   const q = question.toLowerCase();
-  if (q.includes('post') || q.includes('perform') || q.includes('meilleur')) {
+  
+  // Mode-based responses first
+  if (mode === 'monetization') {
+    return mockResponses.monetization;
+  }
+  if (mode === 'strategy') {
+    return mockResponses.strategy;
+  }
+  if (mode === 'audience') {
+    return mockResponses.audience;
+  }
+  
+  // Keyword-based for content_analyst
+  if (q.includes('post') || q.includes('perform') || q.includes('meilleur') || q.includes('top')) {
     return mockResponses.posts;
   }
   if (q.includes('audience') || q.includes('follower') || q.includes('abonné')) {
     return mockResponses.audience;
   }
+  if (q.includes('money') || q.includes('monetiz') || q.includes('argent') || q.includes('gagner')) {
+    return mockResponses.monetization;
+  }
+  if (q.includes('strateg') || q.includes('grow') || q.includes('croissance')) {
+    return mockResponses.strategy;
+  }
+  
   return mockResponses.default;
+};
+
+const getModeDescription = (mode: ChatMode): string => {
+  const descriptions: Record<ChatMode, string> = {
+    content_analyst: 'Analyzes post performance and engagement metrics',
+    monetization: 'Provides monetization strategies and earning potential',
+    strategy: 'Develops growth strategies and action plans',
+    audience: 'Analyzes audience demographics and behavior',
+  };
+  return descriptions[mode];
 };
 
 export const chatService = {
   sendMessage: async (request: ChatRequest): Promise<ChatResponse> => {
+    const mode = request.mode || 'content_analyst';
     const payload = {
       question: request.question,
-      mode: request.mode || 'content_analyst',
+      mode,
       max_tokens: request.max_tokens || 1000,
       temperature: request.temperature || 0.5,
       n_posts: request.n_posts || 3,
@@ -226,11 +317,50 @@ export const chatService = {
       console.log('LLM API unavailable, using mock response');
       await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
       return {
-        response: getMockResponse(request.question),
-        mode: payload.mode,
-        mode_description: '📊 Analyse de Performance - Évalue vos posts et identifie ce qui fonctionne',
+        response: getMockResponse(request.question, mode),
+        mode: mode,
+        mode_description: getModeDescription(mode),
         question: request.question,
-        relevant_posts_count: 3,
+        relevant_posts_count: payload.n_posts,
+      };
+    }
+  },
+
+  getModes: async (): Promise<ModeInfo[]> => {
+    try {
+      return await llmClient.postRaw<ModeInfo[]>('/api/modes', {});
+    } catch {
+      return [
+        { mode: 'content_analyst', description: 'Analyzes post performance and engagement metrics' },
+        { mode: 'monetization', description: 'Provides monetization strategies' },
+        { mode: 'strategy', description: 'Develops growth strategies' },
+        { mode: 'audience', description: 'Analyzes audience demographics' },
+      ];
+    }
+  },
+
+  getStats: async (): Promise<StatsResponse> => {
+    try {
+      return await llmClient.postRaw<StatsResponse>('/api/stats', {});
+    } catch {
+      return {
+        username: 'instametrics_user',
+        followers: 15234,
+        avg_engagement_rate: 4.2,
+        niche: 'Entertainment/Chess',
+        total_posts_indexed: 25,
+      };
+    }
+  },
+
+  getHealth: async (): Promise<HealthResponse> => {
+    try {
+      return await llmClient.postRaw<HealthResponse>('/health', {});
+    } catch {
+      return {
+        status: 'degraded',
+        agent_initialized: false,
+        message: 'Using mock data - LLM API unavailable',
       };
     }
   },
