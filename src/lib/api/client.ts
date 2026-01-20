@@ -93,6 +93,56 @@ class ApiClient {
 
     return response.json();
   }
+
+  // Streaming post for real-time responses
+  async postStream(
+    endpoint: string, 
+    body?: unknown,
+    onChunk?: (chunk: string) => void
+  ): Promise<string> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const config: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    };
+
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        message: `HTTP ${response.status}: ${response.statusText}`,
+      }));
+      throw new Error(errorData.message || 'An error occurred');
+    }
+
+    if (!response.body) {
+      throw new Error('No response body for streaming');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      fullText += chunk;
+      onChunk?.(chunk);
+    }
+
+    return fullText;
+  }
+
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

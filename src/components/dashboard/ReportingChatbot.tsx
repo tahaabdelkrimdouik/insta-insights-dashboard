@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Send, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -10,12 +10,14 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  isStreaming?: boolean;
 }
 
 export function ReportingChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(prev => prev + (prev ? " " : "") + transcript);
@@ -25,6 +27,13 @@ export function ReportingChatbot() {
     onResult: handleVoiceResult,
     language: "fr-FR",
   });
+
+  // Auto-scroll when streaming
+  useEffect(() => {
+    if (isTyping) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isTyping]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -41,31 +50,54 @@ export function ReportingChatbot() {
     setInput("");
     setIsTyping(true);
 
-    try {
-      const response = await chatService.sendMessage({
-        question: userQuestion,
-        mode: 'content_analyst',
-        max_tokens: 1000,
-        temperature: 0.5,
-        n_posts: 3,
-      });
+    // Create placeholder for streaming response
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isStreaming: true,
+    };
+    setMessages((prev) => [...prev, aiMessage]);
 
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: response.response,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
+    try {
+      await chatService.sendMessageStream(
+        {
+          question: userQuestion,
+          mode: 'content_analyst',
+          max_tokens: 1000,
+          temperature: 0.5,
+          n_posts: 3,
+        },
+        (_chunk, fullText) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: fullText }
+                : msg
+            )
+          );
+        }
+      );
+
+      // Mark streaming as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
+      );
     } catch (error) {
       console.error("Chat API error:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, I couldn't process your request. Please try again.",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...msg, content: "Sorry, I couldn't process your request. Please try again.", isStreaming: false }
+            : msg
+        )
+      );
     } finally {
       setIsTyping(false);
     }
@@ -108,6 +140,9 @@ export function ReportingChatbot() {
               {message.role === "assistant" ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-medium [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:my-1.5 [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:my-0.5 [&_strong]:font-semibold">
                   <ReactMarkdown>{message.content}</ReactMarkdown>
+                  {message.isStreaming && (
+                    <span className="inline-block w-2 h-4 bg-foreground/50 animate-pulse ml-1" />
+                  )}
                 </div>
               ) : (
                 <p className="leading-relaxed">{message.content}</p>
@@ -123,7 +158,7 @@ export function ReportingChatbot() {
             </div>
           </div>
         ))}
-        {isTyping && (
+        {isTyping && messages[messages.length - 1]?.content === "" && (
           <div className="flex animate-fade-in justify-start">
             <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
@@ -131,6 +166,7 @@ export function ReportingChatbot() {
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}

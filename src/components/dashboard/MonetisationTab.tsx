@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Send, MessageSquare, Clock, Sparkles, ArrowLeft, DollarSign, Mic, MicOff, Loader2 } from "lucide-react";
 import { mockConversations } from "@/lib/mockData";
 import { useAccountValue } from "@/hooks/useInstagramApi";
@@ -13,6 +13,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  isStreaming?: boolean;
 }
 
 interface Conversation {
@@ -43,6 +44,13 @@ export function MonetisationTab() {
     onResult: handleVoiceResult,
     language: "en-US",
   });
+
+  // Auto-scroll when streaming
+  useEffect(() => {
+    if (isTyping) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isTyping]);
 
   const handleSelectConversation = (conversation: Conversation) => {
     setMessages(conversation.messages);
@@ -88,31 +96,54 @@ export function MonetisationTab() {
     setInputValue("");
     setIsTyping(true);
 
-    try {
-      const response = await chatService.sendMessage({
-        question: userQuestion,
-        mode: 'monetization',
-        max_tokens: 1000,
-        temperature: 0.7,
-        n_posts: 5,
-      });
+    // Create placeholder for streaming response
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      isStreaming: true,
+    };
+    setMessages((prev) => [...prev, aiMessage]);
 
-      const newAIMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: response.response,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, newAIMessage]);
+    try {
+      await chatService.sendMessageStream(
+        {
+          question: userQuestion,
+          mode: 'monetization',
+          max_tokens: 1000,
+          temperature: 0.7,
+          n_posts: 5,
+        },
+        (_chunk, fullText) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: fullText }
+                : msg
+            )
+          );
+        }
+      );
+
+      // Mark streaming as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
+      );
     } catch (error) {
       console.error("Chat API error:", error);
-      const newAIMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, there was an error processing your request. Please try again.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, newAIMessage]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...msg, content: "Sorry, there was an error processing your request. Please try again.", isStreaming: false }
+            : msg
+        )
+      );
     } finally {
       setIsTyping(false);
     }
@@ -278,6 +309,9 @@ export function MonetisationTab() {
                     {message.role === "assistant" ? (
                       <div className="prose prose-sm dark:prose-invert max-w-none [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-medium [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:my-1.5 [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:my-0.5 [&_strong]:font-semibold">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
+                        {message.isStreaming && (
+                          <span className="inline-block w-2 h-4 bg-foreground/50 animate-pulse ml-1" />
+                        )}
                       </div>
                     ) : (
                       <p className="leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -293,7 +327,7 @@ export function MonetisationTab() {
                   </div>
                 </div>
               ))}
-              {isTyping && (
+              {isTyping && messages[messages.length - 1]?.content === "" && (
                 <div className="flex gap-3 animate-fade-in">
                   <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
                     <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
