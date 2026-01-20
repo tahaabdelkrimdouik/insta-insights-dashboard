@@ -326,6 +326,49 @@ export const chatService = {
     }
   },
 
+  // Streaming version for real-time responses
+  sendMessageStream: async (
+    request: ChatRequest,
+    onChunk: (chunk: string, fullText: string) => void
+  ): Promise<string> => {
+    const mode = request.mode || 'content_analyst';
+    const payload = {
+      question: request.question,
+      mode,
+      max_tokens: request.max_tokens || 1000,
+      temperature: request.temperature || 0.5,
+      n_posts: request.n_posts || 3,
+    };
+    
+    let fullText = '';
+    
+    try {
+      const result = await llmClient.postStream(
+        '/api/chat/stream',
+        payload,
+        (chunk) => {
+          fullText += chunk;
+          onChunk(chunk, fullText);
+        }
+      );
+      return result;
+    } catch (error) {
+      // Fallback to mock data with simulated streaming
+      console.log('LLM streaming unavailable, simulating with mock data');
+      const mockResponse = getMockResponse(request.question, mode);
+      const words = mockResponse.split(' ');
+      
+      for (let i = 0; i < words.length; i++) {
+        const chunk = (i === 0 ? '' : ' ') + words[i];
+        fullText += chunk;
+        onChunk(chunk, fullText);
+        await new Promise(resolve => setTimeout(resolve, 30)); // Simulate streaming delay
+      }
+      
+      return fullText;
+    }
+  },
+
   getModes: async (): Promise<ModeInfo[]> => {
     try {
       return await llmClient.postRaw<ModeInfo[]>('/api/modes', {});
