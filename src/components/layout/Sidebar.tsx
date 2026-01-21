@@ -47,7 +47,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <div className="gradient-accent rounded-lg p-2">
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-sidebar-foreground">InstaMetrics</span>
+            <span className="text-lg font-bold text-sidebar-foreground">Insights</span>
           </div>
           <Button
             variant="ghost"
@@ -116,7 +116,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               </div>
               {!isCollapsed && (
                 <div className="fade-in">
-                  <h1 className="text-xl font-bold text-sidebar-foreground">InstaMetrics</h1>
+                  <h1 className="text-xl font-bold text-sidebar-foreground">Insights</h1>
                   <p className="text-xs text-sidebar-foreground/60">Analytics Dashboard</p>
                 </div>
               )}

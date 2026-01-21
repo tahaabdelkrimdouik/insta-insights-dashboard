@@ -80,35 +80,61 @@ export function GlobeMap() {
     const updateDimensions = () => {
       if (containerRef.current) {
         const isMobile = window.innerWidth < 640;
+        const width = containerRef.current.clientWidth || containerRef.current.offsetWidth;
         setDimensions({
-          width: containerRef.current.clientWidth,
+          width: width || 800, // Fallback width
           height: isMobile ? 280 : 340
         });
       }
     };
 
+    // Initial update with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateDimensions, 100);
     updateDimensions();
+    
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    
+    // Use ResizeObserver for more accurate dimension tracking
+    let resizeObserver: ResizeObserver | null = null;
+    const containerElement = containerRef.current;
+    if (containerElement && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(updateDimensions);
+      resizeObserver.observe(containerElement);
+    }
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateDimensions);
+      if (resizeObserver && containerElement) {
+        resizeObserver.unobserve(containerElement);
+      }
+    };
   }, []);
 
-  // Configure globe after mount
+  // Configure globe after mount and when dimensions change
   useEffect(() => {
-    if (globeRef.current) {
-      // Set initial camera position
-      globeRef.current.pointOfView({ lat: 30, lng: 0, altitude: 2.2 });
+    if (globeRef.current && dimensions.width > 0) {
+      // Small delay to ensure globe is fully initialized
+      const timeoutId = setTimeout(() => {
+        if (globeRef.current) {
+          // Set initial camera position
+          globeRef.current.pointOfView({ lat: 30, lng: 0, altitude: 2.2 });
+          
+          // Enable auto-rotation
+          const controls = globeRef.current.controls();
+          if (controls) {
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+            controls.enableZoom = true;
+            controls.minDistance = 150;
+            controls.maxDistance = 500;
+          }
+        }
+      }, 200);
       
-      // Enable auto-rotation
-      const controls = globeRef.current.controls();
-      if (controls) {
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
-        controls.enableZoom = true;
-        controls.minDistance = 150;
-        controls.maxDistance = 500;
-      }
+      return () => clearTimeout(timeoutId);
     }
-  }, [dimensions.width]);
+  }, [dimensions.width, dimensions.height]);
 
   // Loading state
   if (isLoading) {
@@ -163,15 +189,15 @@ export function GlobeMap() {
       {/* Globe container */}
       <div 
         ref={containerRef}
-        className="relative h-[280px] sm:h-[340px] rounded-xl overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background"
+        className="relative h-[280px] sm:h-[340px] w-full rounded-xl overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background"
       >
-        {dimensions.width > 0 && (
+        {dimensions.width > 0 && dimensions.height > 0 && (
           <Globe
             ref={globeRef}
             width={dimensions.width}
             height={dimensions.height}
             backgroundColor="rgba(0,0,0,0)"
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+            globeImageUrl="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
             atmosphereColor="#f97316"
             atmosphereAltitude={0.18}
             pointsData={pointsData}

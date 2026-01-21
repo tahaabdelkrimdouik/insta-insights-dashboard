@@ -17,7 +17,9 @@ export function ReportingChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isUserNearBottomRef = useRef(true);
 
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(prev => prev + (prev ? " " : "") + transcript);
@@ -28,12 +30,28 @@ export function ReportingChatbot() {
     language: "fr-FR",
   });
 
-  // Auto-scroll when streaming
-  useEffect(() => {
-    if (isTyping) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Scroll to bottom within the container only (not the page)
+  const scrollToBottom = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, []);
+
+  // Check if user is near bottom of chat container
+  const checkIfNearBottom = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < 100; // 100px threshold
+  }, []);
+
+  // Auto-scroll only if user is near bottom (don't fight manual scrolling)
+  useEffect(() => {
+    if (isUserNearBottomRef.current) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -49,6 +67,9 @@ export function ReportingChatbot() {
     const userQuestion = input;
     setInput("");
     setIsTyping(true);
+    
+    // Scroll to bottom when user sends a message
+    setTimeout(() => scrollToBottom(), 50);
 
     // Create placeholder for streaming response
     const aiMessageId = (Date.now() + 1).toString();
@@ -113,7 +134,11 @@ export function ReportingChatbot() {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Messages */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <div
+        ref={messagesContainerRef}
+        onScroll={checkIfNearBottom}
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar"
+      >
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <h1 className="text-lg text-muted-foreground text-center font-medium">
