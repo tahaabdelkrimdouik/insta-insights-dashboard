@@ -38,13 +38,28 @@ class ApiClient {
         throw new Error(errorData.message || 'An error occurred');
       }
 
-      const data: ApiResponse<T> = await response.json();
-      
-      if (!data.success) {
-        throw new Error('API returned unsuccessful response');
+      // Support both response formats:
+      // 1) Wrapped: { success: boolean, data: T }
+      // 2) Raw: T (or sometimes { success: boolean, ...fields } without `data`)
+      const json: unknown = await response.json();
+
+      if (json && typeof json === 'object') {
+        const obj = json as Record<string, unknown>;
+
+        // Wrapped format
+        if ('success' in obj && 'data' in obj) {
+          const wrapped = obj as ApiResponse<T>;
+          if (!wrapped.success) throw new Error('API returned unsuccessful response');
+          return wrapped.data;
+        }
+
+        // Raw format with a `success` flag but no `data` wrapper
+        if ('success' in obj && typeof obj.success === 'boolean') {
+          if (obj.success === false) throw new Error('API returned unsuccessful response');
+        }
       }
 
-      return data.data;
+      return json as T;
     } catch (error) {
       if (error instanceof Error) {
         throw error;

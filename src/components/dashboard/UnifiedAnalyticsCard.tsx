@@ -263,7 +263,7 @@ export function UnifiedAnalyticsCard() {
       <div className="hidden lg:block w-px bg-border/50" />
 
       {/* Right: Floating Chatbot Panel - Desktop only */}
-      <div className="hidden lg:flex w-[340px] xl:w-[380px]">
+      <div className="hidden lg:flex w-[340px] xl:w-[380px] h-[580px]">
         <div className="bg-transparent rounded-2xl overflow-hidden flex-1 sticky top-4">
           <ReportingChatbot />
         </div>
