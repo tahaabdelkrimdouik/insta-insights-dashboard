@@ -193,6 +193,59 @@ export interface AccountValue {
   };
 }
 
+// Audience Map types
+export interface AudienceMapMarker {
+  country_code: string;
+  country_name: string;
+  lat: number;
+  lng: number;
+  followers: number;
+  percentage: number;
+  marker_size: number;
+}
+
+export interface AudienceMapCity {
+  city: string;
+  country: string;
+  followers: number;
+  percentage: number;
+  lat?: number;
+  lng?: number;
+}
+
+export interface AudienceMapCountry {
+  country_code: string;
+  country_name: string;
+  followers: number;
+  percentage: number;
+  coordinates: { lat: number; lng: number };
+}
+
+export interface AudienceMapDemographics {
+  gender: { gender: string; followers: number; percentage: number }[];
+  age: { age_range: string; followers: number; percentage: number }[];
+}
+
+export interface AudienceMapResponse {
+  success: boolean;
+  account: {
+    username: string;
+    total_followers: number;
+    account_type: string;
+  };
+  insights_available: boolean;
+  geographic: {
+    countries: AudienceMapCountry[];
+    top_countries: AudienceMapCountry[];
+    cities: AudienceMapCity[];
+    top_cities: AudienceMapCity[];
+    regions: Record<string, { followers: number; percentage: number }>;
+  };
+  demographics: AudienceMapDemographics;
+  map_markers: AudienceMapMarker[];
+  fetched_at: string;
+}
+
 // Complete analytics
 export interface CompleteAnalytics {
   profile: ProfileWithEngagement;

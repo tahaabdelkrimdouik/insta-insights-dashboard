@@ -18,6 +18,7 @@ import type {
   HashtagPerformance,
   GrowthPredictions,
   AccountValue,
+  AudienceMapResponse,
 } from './types';
 
 // ============ Auth Services ============
@@ -115,6 +116,9 @@ export const insightsService = {
   
   getAccountValue: () => 
     apiClient.get<AccountValue>(API_ENDPOINTS.insights.accountValue),
+
+  getAudienceMap: () =>
+    apiClient.get<AudienceMapResponse>(API_ENDPOINTS.insights.audienceMap),
 };
 
 // ============ Chat Services ============

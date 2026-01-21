@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     hashtags: '/stats/hashtags',
     predictions: '/stats/predictions',
     accountValue: '/stats/account-value',
+    audienceMap: '/stats/audience-map',
   },
   // Chat
   chat: '/api/chat',

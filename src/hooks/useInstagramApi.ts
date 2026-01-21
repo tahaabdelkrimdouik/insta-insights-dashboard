@@ -37,6 +37,7 @@ export const queryKeys = {
     hashtags: ['insights', 'hashtags'] as const,
     predictions: ['insights', 'predictions'] as const,
     accountValue: ['insights', 'accountValue'] as const,
+    audienceMap: ['insights', 'audienceMap'] as const,
   },
 } as const;
 
@@ -173,5 +174,13 @@ export function useAccountValue() {
     queryKey: queryKeys.insights.accountValue,
     queryFn: insightsService.getAccountValue,
     staleTime: 30 * 60 * 1000,
+  });
+}
+
+export function useAudienceMap() {
+  return useQuery({
+    queryKey: queryKeys.insights.audienceMap,
+    queryFn: insightsService.getAudienceMap,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }
